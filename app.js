@@ -9,7 +9,4 @@ app.use((req, res, next) => {
 });
 app.use('/api/v1/tours',tourRouter)
 app.use('/api/v1/users',userRouter)
-
-app.listen(3000, () => {
-  console.log(`App Listening on http://localhost:3000`);
-});
+export {app}
