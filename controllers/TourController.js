@@ -1,6 +1,24 @@
 import fs from 'fs'
 const data = fs.readFileSync("./dev-data/data/tours-simple.json", "utf-8");
 let tours = JSON.parse(data);
+export const checkTourBody=(req,res,next)=>
+{
+    const {name,price}=req.body;
+    console.log('body',req.body)
+    if(!name || !price)
+    {
+        return res.status(400).send({message:"name and Price are compulsory for adding the tour"})
+    }
+    next()
+}
+export const checkId=(req,res,next,id)=>
+{
+    
+    if (id > tours.length || isNaN(id) || id < 1) {
+     return res.status(400).send({ message: "Error Invalid ID!!!" });
+    }
+    next()
+}
 export const getTours = (req, res) => {
     res.status(200).send({ message: "Success", data: { tours } });
   };
