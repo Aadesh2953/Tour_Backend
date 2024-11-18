@@ -63,10 +63,3 @@ const TourSchema=new mongoose.Schema({
     timeStamps:true
 })
 export const Tour=new mongoose.model('Tour',TourSchema)
-
-
-const newTour=new Tour({
-    name:"Aadesh Tour 1",
-    price:25,
-    rating:5,
-})

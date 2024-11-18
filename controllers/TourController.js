@@ -1,8 +1,15 @@
-
 import { Tour } from '../models/TourModel.js';
 export const getTours = async(req, res) => {
     try{
-      const Tours=await Tour.find();
+      let query={...req.query}
+      const excludeFeilds=['page','limit','sort','fields']
+      excludeFeilds.forEach((field)=>delete query[field])
+      let queryStr=JSON.stringify(query)
+      queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+      query=JSON.parse(queryStr)
+      console.log("query",query)
+      const Tours=await Tour.find(query);
+      // const Tours=await Tour.find().where(difficulty).equals("easy").where(age).equals(5)
       if(Tours.length>0)
       {
          res.status(201).json({
@@ -19,12 +26,12 @@ export const getTours = async(req, res) => {
         res.status(201).json({
           status:"Success",
           message:"No Tour To Display!!"
-
          })
       }
     }
     catch(err)
     {
+      console.log('err',err)
       res.status(401).json({
         status:"Error",
         message:err
