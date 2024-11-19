@@ -6,13 +6,26 @@ export const getTours = async(req, res) => {
       excludeFeilds.forEach((field)=>delete query[field])
       let queryStr=JSON.stringify(query)
       queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-      query=JSON.parse(queryStr)
-      console.log("query",query)
-      const Tours=await Tour.find(query);
-      // const Tours=await Tour.find().where(difficulty).equals("easy").where(age).equals(5)
-      if(Tours.length>0)
+      let reqQuery=Tour.find(JSON.parse(queryStr));
+      if(req.query.sort)
       {
-         res.status(201).json({
+         const sortBy=req.query.sort.split(',').join(" ")
+         reqQuery =  reqQuery.sort(sortBy);
+      }
+       
+      if(req.query.fields)
+      {
+        const selectedFeilds=req.query.fields?.split(',').join(" ")
+        reqQuery=reqQuery.select(selectedFeilds);
+      }
+      else
+      {
+        reqQuery=reqQuery.select('-__v')
+      }
+      const Tours=await reqQuery;
+      console.log("Tours",Tours)
+      if(Tours.length>0)
+      {   res.status(201).json({
           status:"Success",
           items:Tours.length,
           data:{
