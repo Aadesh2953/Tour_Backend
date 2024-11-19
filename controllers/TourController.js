@@ -11,8 +11,7 @@ export const getTours = async(req, res) => {
       {
          const sortBy=req.query.sort.split(',').join(" ")
          reqQuery =  reqQuery.sort(sortBy);
-      }
-       
+      }     
       if(req.query.fields)
       {
         const selectedFeilds=req.query.fields?.split(',').join(" ")
@@ -22,8 +21,24 @@ export const getTours = async(req, res) => {
       {
         reqQuery=reqQuery.select('-__v')
       }
+      const page=req.query.page||1
+      const limit=req.query.limit||100
+      const skip=(page-1)*limit
+
+
+      if(req.query.page)
+      {
+        const totalDocuments=await Tour.countDocuments()
+        if(skip>totalDocuments)
+        {
+          return res.status(400).json({
+            status:"Fail",
+            message:"Invalid Page Number"
+        })
+        }
+      }
+      reqQuery=reqQuery.skip(skip).limit(limit)
       const Tours=await reqQuery;
-      console.log("Tours",Tours)
       if(Tours.length>0)
       {   res.status(201).json({
           status:"Success",
