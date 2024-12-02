@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { getTours,addTour,getTourById,updateTourById,deleteTourById} from "../controllers/TourController.js";
+import { getTours,addTour,getTourById,updateTourById,deleteTourById,injectQuery} from "../controllers/TourController.js";
 const tourRouter = Router();
 // tourRouter.param('id',checkId)
-
+tourRouter.route('/top-5-tour').get(injectQuery,getTours)
 tourRouter
 .route("/")
 .get(getTours)
