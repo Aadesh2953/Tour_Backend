@@ -38,7 +38,7 @@ class ApiFeature {
   }
 }
 export const injectQuery = async (req, res, next) => {
-  req.query.sort = "ratingAverage"; 
+  req.query.sort = "ratingAverage";
   req.query.limit = "5";
   req.query.fields = "name,price,ratingAverage,summary,difficulty";
   next();
@@ -48,7 +48,8 @@ export const getTours = async (req, res) => {
     const features = new ApiFeature(Tour.find(), req.query)
       .filter()
       .sort()
-      .limitFeilds().paginate();
+      .limitFeilds()
+      .paginate();
     const Tours = await features.query;
     if (Tours.length > 0) {
       res.status(201).json({
@@ -148,25 +149,85 @@ export const deleteTourById = async (req, res) => {
     });
   }
 };
-export const getTourStats=async(req,res)=>
-{
+export const getTourStats = async (req, res) => {
   try {
-    const stats=await Tour.aggregate([
-    {
-      $match:{
-        ratingsAverage:{$gte:4,$lte:5}
-    },
-    $group:{
-      _id:null,
-      avgRating:{$avg:'$ratingsAverage'},
-      total:{$sum:1},
-      avgPrice:{$avg:'$price'},
-      minPrice:{$min:'$price'},
-      macPrice:{$max:'$price'},
-    }
-  }
-    ])
+    let stats = await Tour.aggregate([
+      
+       { $match: {
+          ratingsAverage: { $gte: 4, $lte: 5 },
+        }},
+        {$group: {
+          _id: "$difficulty",
+          avgRating: { $avg: "$ratingsAverage" },
+          total: { $sum: 1 },
+          avgPrice: { $avg: "$price" },
+          minPrice: { $min: "$price" },
+          macPrice: { $max: "$price" },
+        },},
+        {
+          $sort:1
+        }
+      
+    ]);
+    res.status(200).send({
+      status:"Success",
+      data:stats
+    })
   } catch (error) {
-    
+    console.log('error',error)
+    res.status(401).send({
+      status: "Fail",
+      error
+    });
   }
+};
+export const mostSellingTourData=async(req,res)=>
+{
+  try{
+    let year=req.query?.year
+  const topSellingTour=await Tour.aggregate([
+  {
+     $unwind:"$startDates"
+  },
+  {
+       $match:{
+        startDates:{
+         $gte:new Date(`${year}-01-01`),
+         $lte:new Date(`${year}-12-31`)
+        }
+       }
+  },
+  {
+    $group:{
+      _id:{$month:"$startDates"},
+      totalTours:{$sum:1},
+      name:{$push:'$name'}
+    }
+  },
+  {
+    $addFields:{month:'$_id'}
+  },
+  {  $sort:{
+    totalTours:-1
+  }
+  },
+  {
+    $limit:1
+  }
+  ])
+  res.status(200).send({
+    status:"Success",
+    total:topSellingTour.length,
+    data:{topSellingTour},
+   
+  })
+}
+catch(error)
+{
+  
+  res.status(400).send({
+    status:"Fail",
+    message:error
+  })
+}
 }
