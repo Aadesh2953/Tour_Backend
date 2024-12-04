@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 const TourSchema=new mongoose.Schema({
     name:{
         type:String,
@@ -55,11 +56,35 @@ const TourSchema=new mongoose.Schema({
             type:Date,
             required:[true,'Start Date IS Required']
         }
-    ]
-
-
+    ],
+    slug:{
+        type:String,
+    },
+    secretTour:{
+        type:Boolean,
+        default:false
+    }
+},
+{
+  toJSON:{virtuals:true},
+  toObject:{virtuals:true}  
 },
 {
     timeStamps:true
+})
+// TourSchema.set('toJSON',{virtuals:true})
+TourSchema.pre(/^find/,function(next)
+{
+    this.find({secretTour:{$ne:true}})
+    next()
+})
+TourSchema.virtual("weekDuration").get(function()
+{
+  return this.duration/7;
+})
+TourSchema.pre("save",function(next)
+{
+    this.slug=slugify(this.name,{lower:true})
+    next()
 })
 export const Tour=new mongoose.model('Tour',TourSchema)
