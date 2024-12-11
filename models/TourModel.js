@@ -5,6 +5,8 @@ const TourSchema=new mongoose.Schema({
         type:String,
         required:[true,'A tour must have Name'],
         trim:true,
+        maxLength:[40,'Too Long Name For the Tour!!'],
+        minLength:[1,'Minimum number of elements should be 1'],
         unique:true,
     },
     price:{
@@ -13,6 +15,8 @@ const TourSchema=new mongoose.Schema({
      },
      rating:{
         type:Number,
+        max:[5,'Max Rating must be 5'],
+        min:[1,'Min Rating must be 1'],
         default:0 
      },
      duration:{
@@ -21,17 +25,30 @@ const TourSchema=new mongoose.Schema({
      },
     difficulty:{
         type:String,
-        required:[true,'A tour must have a difficulty Rating']
+        required:[true,'A tour must have a difficulty Rating'],
+        enum:{
+            values:['easy','medium','hard'],
+            message:"Difficulty must be hard,easy and medium"
+        }
     },
     ratingsAverage:{
      type:Number,
+     min:[1,'Min Rating must be 1'],
+     max:[5,'Min Rating must be 5'],
      default:4.5
     },
     ratingsQuantity:{
         type:Number,
         default:0
     },
-    priceDisount:Number,
+    priceDisount:{
+        type:Number,
+        validate:{
+            validator:function(val){return val<this.price},
+            message:'priceDiscount should be less than {val}'
+        } 
+
+    },
     summary:{
         type:String,
         trim:true,
@@ -89,7 +106,7 @@ TourSchema.pre("save",function(next)
 })
 TourSchema.pre("aggregate",function(next)
 {
-    this.pipeline.unshift({$match:{secretTour:{$ne:true}}})
+    this.pipeline().unshift({$match:{secretTour:{$ne:true}}})
     next()
 })
 export const Tour=new mongoose.model('Tour',TourSchema)

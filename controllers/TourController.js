@@ -1,4 +1,6 @@
+import { asyncHandler } from "../utils/AsyncHandler.js";
 import { Tour } from "../models/TourModel.js";
+import ApiError from "../utils/ApiError.js";
 class ApiFeature {
   constructor(query, queryString) {
     this.query = query;
@@ -17,6 +19,9 @@ class ApiFeature {
     if (this.queryString.sort) {
       const sortBy = this.queryString.sort.split(",").join(" ");
       this.query = this.query.sort(sortBy);
+    }
+    else{
+      this.query = this.query.sort("-ratingAverage");
     }
     return this;
   }
@@ -43,8 +48,8 @@ export const injectQuery = async (req, res, next) => {
   req.query.fields = "name,price,ratingAverage,summary,difficulty";
   next();
 };
-export const getTours = async (req, res) => {
-  try {
+export const getTours = asyncHandler(async (req, res,next) => {
+  
     const features = new ApiFeature(Tour.find(), req.query)
       .filter()
       .sort()
@@ -65,16 +70,9 @@ export const getTours = async (req, res) => {
         message: "No Tour To Display!!",
       });
     }
-  } catch (err) {
-    console.log("err", err);
-    res.status(401).json({
-      status: "Error",
-      message: err,
-    });
   }
-};
-export const addTour = async (req, res) => {
-  try {
+   )
+export const addTour =asyncHandler( async (req, res,next) => {
     const newTour = await Tour.create(req.body);
     res.status(201).json({
       status: "Success",
@@ -82,12 +80,8 @@ export const addTour = async (req, res) => {
         tour: newTour,
       },
     });
-  } catch (error) {
-    res.status(401).json({ status: "Fail", message: error });
-  }
-};
-export const getTourById = async (req, res) => {
-  try {
+})
+export const getTourById = asyncHandler(async (req, res,next) => {
     const id = req.params?.id;
     const tour = await Tour.findById(id);
     if (!tour) {
@@ -96,63 +90,47 @@ export const getTourById = async (req, res) => {
         message: "Tour not found",
       });
     }
-
+    if(!tour){
+      next(new ApiError(404,'No Tour Found With that id!'))
+    }
     res.status(200).json({
       status: "Success",
       data: tour,
     });
-  } catch (err) {
-    console.error("Error fetching tour:", err); // Useful for debugging
-    res.status(500).json({
-      status: "Fail",
-      message: err.message || "An unexpected error occurred",
-    });
-  }
-};
-export const updateTourById = async (req, res) => {
-  try {
+  
+})
+export const updateTourById = asyncHandler(async (req, res,next) => {
     const id = req.params?.id;
     const data = req?.body;
     const updatedTour = await Tour.findByIdAndUpdate(id, data, {
       runValidations: true,
       new: true,
     });
+    if(!updatedTour){
+      next(new ApiError(404,'No Tour Found With that id!'))
+    }
     res.status(201).json({
       message: "Success",
       data: {
         updatedTour,
       },
     });
-  } catch (error) {
-    res.status(401).json({
-      message: "Fail",
-      error,
-    });
-  }
-};
-export const deleteTourById = async (req, res) => {
-  try {
+})
+export const deleteTourById = asyncHandler(async (req, res,next) => {
     const id = req.params?.id;
     const deletedTour = await Tour.findByIdAndDelete(id);
+    if(!deletedTour){
+      next(new ApiError(404,'No Tour Found With that id!'))
+    }
     res.status(201).json({
       status: "Success",
       message: {
         deletedTour,
       },
-    });
-  } catch (err) {
-    res.status(401).json({
-      status: "Fail",
-      message: {
-        err,
-      },
-    });
-  }
-};
-export const getTourStats = async (req, res) => {
-  try {
+})
+})
+export const getTourStats = (async(req, res,next) => {
     let stats = await Tour.aggregate([
-      
        { $match: {
           ratingsAverage: { $gte: 4, $lte: 5 },
         }},
@@ -162,10 +140,10 @@ export const getTourStats = async (req, res) => {
           total: { $sum: 1 },
           avgPrice: { $avg: "$price" },
           minPrice: { $min: "$price" },
-          macPrice: { $max: "$price" },
+          maxPrice: { $max: "$price" },
         },},
         {
-          $sort:1
+          $sort:{ratingsAverage:1}
         }
       
     ]);
@@ -173,18 +151,11 @@ export const getTourStats = async (req, res) => {
       status:"Success",
       data:stats
     })
-  } catch (error) {
-    console.log('error',error)
-    res.status(401).send({
-      status: "Fail",
-      error
-    });
-  }
-};
-export const mostSellingTourData=async(req,res)=>
+  
+})
+export const mostSellingTourData=asyncHandler(async(req,res)=>
 {
-  try{
-    let year=req.query?.year
+  let year=req.query?.year
   const topSellingTour=await Tour.aggregate([
   {
      $unwind:"$startDates"
@@ -221,13 +192,4 @@ export const mostSellingTourData=async(req,res)=>
     data:{topSellingTour},
    
   })
-}
-catch(error)
-{
-  
-  res.status(400).send({
-    status:"Fail",
-    message:error
-  })
-}
-}
+})
