@@ -84,12 +84,6 @@ export const addTour =asyncHandler( async (req, res,next) => {
 export const getTourById = asyncHandler(async (req, res,next) => {
     const id = req.params?.id;
     const tour = await Tour.findById(id);
-    if (!tour) {
-      return res.status(404).json({
-        status: "Error",
-        message: "Tour not found",
-      });
-    }
     if(!tour){
       next(new ApiError(404,'No Tour Found With that id!'))
     }
