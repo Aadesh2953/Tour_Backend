@@ -1,12 +1,12 @@
 import { Router } from "express";
 import {
-  getAllUsers,
-  getUser,
-  updateUser,
-  deleteUser,
-  createUser,
+  // getAllUsers,
+  // getUser,
+  // updateUser,
+  // deleteUser,
+  signUpUser,
 } from "../controllers/UserController.js";
 let userRouter = Router();
-userRouter.route("/").get(getAllUsers).post(createUser);
-userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
+userRouter.route("/signup").post(signUpUser);
+// userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
 export { userRouter };
