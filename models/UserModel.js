@@ -66,9 +66,7 @@ userModel.methods.createPasswordResetToken = function () {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  console.log("pass", this.passwordResetToken);
   this.passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
-  console.log("pass", this.passwordResetTokenExpires - Date.now());
   return resetToken;
 };
 const User = new mongoose.model("User", userModel);
