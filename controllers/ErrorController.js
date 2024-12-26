@@ -5,7 +5,19 @@ export const apiErrorHandler=(err,req,res,next)=>
    if(err.name=='CastError')
    {
      handleDbError(err,res)
+     return
    }
+   
+   if(err.name=='JsonWebTokenError')
+   {
+     handleJSONWebTokenError(err,res);
+     return
+   }
+   if(err.name=='TokenExpiredError')
+    {
+      tokenExpiredError(err,res);
+      return
+    }
     if(process.env.NODE_ENV=='development')
     {
       development(err,res);
@@ -14,6 +26,7 @@ export const apiErrorHandler=(err,req,res,next)=>
     if(process.env.NODE_ENV=='production')
       {
         production(err,res);
+        return;
       }
 }
 export const development=(err,res)=>
@@ -41,3 +54,18 @@ export const handleDbError=(err,res)=>
     message:"Something went wrong!!!"
    })
 }
+export const  handleJSONWebTokenError=(err,res)=>
+{
+  res.status(500).json({
+    status:err.status,
+    message:"Invalid Token!!!"
+   })
+}
+export const tokenExpiredError=(err,res)=>
+  {
+    res.status(500).json({
+      status:err.status,
+      message:"TOKEN eXPIRED!!!"
+     })
+  }
+;
