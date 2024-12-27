@@ -4,18 +4,14 @@ import crypto from "crypto";
 import { sendEmail } from "../utils/email.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
-// export const getAllUsers = (req, res) => {
-//   res.status(500).json({ success: "false", message: "Invalid Route " });
-// };
-// export const getUser = (req, res) => {
-//   res.status(500).json({ success: "false", message: "Invalid Route " });
-// };
-// export const updateUser = (req, res) => {
-//   res.status(500).json({ success: "false", message: "Invalid Route " });
-// };
-// export const deleteUser = (req, res) => {
-//   res.status(500).json({ success: "false", message: "Invalid Route " });
-// };
+const filteredBody=(body,key)=>
+{
+  for(let elements in body)
+  {
+    if(elements[key])delete elements[key];
+  }
+  return body;
+}
 export const getAllUsers=asyncHandler(async(req,res,next)=>{
   const users=await User.find().select("-password -confirmPassword");
   res.status(201).json({
@@ -105,9 +101,9 @@ export const forgotPassword=asyncHandler(async(req,res,next)=>
   {
     const {password,confirmPassword}=req.body;
     const token=req.params?.token;
-    console.log('token',token)
+    // console.log('token',token)
     const hashedToken=crypto.createHash("sha256").update(token).digest("hex");
-    console.log('hashed',hashedToken)
+    // console.log('hashed',hashedToken)
     let user=await User.findOne({passwordResetToken:hashedToken,passwordResetTokenExpires:{$gt:Date.now()}});
     if(!token)  return next(new ApiError(404,'Token Not Found!!'));
     if(!user) return next(new ApiError(404,'Token Not Found!! or Token must have Expired!!!'));
@@ -123,5 +119,42 @@ export const forgotPassword=asyncHandler(async(req,res,next)=>
       message:"Password Reset Successfully",
       token:newToken,
       status:"Success"
+  })
+})
+export const updateExistingPassword=asyncHandler(async(req,res,next)=>
+{
+  const user=await User.findById(req.user?.id).select('+password');
+  if(!user) return next(new ApiError(404,'user Not Found!!!'));
+  if(!await user.isPasswordCorrect(req.body?.currentPassword))
+  {
+     return next(new ApiError(404,'Password InCorrect!!!'));
+  }
+  user.password=req.body.password;
+  user.confirmPassword=req.body.confirmPassword;
+  const newToken=getJWTToken(user._id);
+  await user.save({validateBeforeSave:false});
+  res.status(200).json({
+    data:user,
+    newToken
+  })
+})
+export const updateUser=asyncHandler(async(req,res,next)=>
+{
+
+  // if(!req.body)return next(new ApiError(401,'Please Provide some body'));
+  if(req.body.password||req.body.confirmPassword)
+  {
+    return next(new ApiError(404,'For Resetting Password you can go to Update Password!!!'));
+  }
+  const user=await User.findById(req.user?.id);
+  if(!user)
+  {
+    return next(new ApiError(404,'User Not Found!!!'));
+  }
+  const body=filteredBody(req.body,'role')
+  const updatedUser=await User.findByIdAndUpdate(req.user.id,{...body},{new:true,runValidators:true});
+  res.status(200).json({
+    message:"Success!",
+    user:updatedUser
   })
 })

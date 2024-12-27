@@ -4,7 +4,6 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
 export const verifyToken=asyncHandler(async(req,res,next)=>
 {
-    
     if(!req.headers || !req.headers.authorization)
     {
        return next(new ApiError(401,'Pls login to Access This Route!!!'));   
@@ -14,8 +13,8 @@ export const verifyToken=asyncHandler(async(req,res,next)=>
         {
          return next(new ApiError(401,'Pls login to Access This Route!!!'));
         }
-     const decodedToken=await jwt.verify(reqToken,process.env.JWT_SECRET);
-     
+     const decodedToken= jwt.verify(reqToken,process.env.JWT_SECRET);
+     console.log('decoded',decodedToken)
      if(!decodedToken)
     {
         return next(new ApiError(401,'Token not Found'))
@@ -25,7 +24,7 @@ export const verifyToken=asyncHandler(async(req,res,next)=>
     {
         return next(new ApiError(401,'User with This User Id Does Not Exist!!!'));
     }
-   if(!user.isPasswordUpdated)
+   if(user.isPasswordUpdated())
    {
     return next(new ApiError(401,'Password Updated Please Login Again to Continue!!'));
    }

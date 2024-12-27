@@ -13,9 +13,8 @@ export const sendEmail=async(options)=>
         from:process.env.EMAIL,
         to:options.email,
         subject:options.subject,
-        message:options.message,
         text:options.text,
         html:options.html
     }
-    await transporter.sendMail(mailOptions)
+    await transporter.sendMail(mailOptions);
 }

@@ -55,6 +55,7 @@ userModel.methods.isPasswordUpdated = function (jwtIat) {
   const passwordUpdatedDate = parseInt(
     this.passwordChangeDate.getTime() / 1000
   );
+  
   if (passwordUpdatedDate > jwtIat) {
     return true;
   }
