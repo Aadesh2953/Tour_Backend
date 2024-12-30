@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getTours,addTour,getTourById,updateTourById,deleteTourById,injectQuery,getTourStats,mostSellingTourData} from "../controllers/TourController.js";
 import {restrictTo, verifyToken} from "../middlewares/AuthMiddleWare.js"
 const tourRouter = Router();
-// tourRouter.param('id',checkId)
+// tourRouter.param('id',checkId)QUERY MIDDLEWARE THIS IS QUERY MIDDLEWARE
 tourRouter.route('/top-5-tour').get(injectQuery,getTours)
 tourRouter.route("/getTourStats").get(getTourStats)
 tourRouter.route("/topSellers").get(mostSellingTourData)

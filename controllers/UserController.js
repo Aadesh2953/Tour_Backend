@@ -45,7 +45,12 @@ export const getJWTToken=(id)=>
     }
 
     const token = getJWTToken(user._id);  // Function to generate token
-
+    let options={
+      expires:new Date(Date.now()+process.env.JWT_EXPIRES_IN*24*60*60*1000),
+      // httpOnly:true,
+      // secure:true,
+    }
+    res.cookie("jwt",token,options);
     res.status(201).json({
         message: 'Success',
         token,
@@ -55,17 +60,24 @@ export const getJWTToken=(id)=>
 
 
 export const signUpUser = asyncHandler(async (req, res, next) => {
-  let newUser =  await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    role:req.body.role,
-    confirmPassword: req.body.confirmPassword,
-  })
-  newUser = await User.findById(newUser._id).select('-password -confirmPassword');
+  const existingUser=await User.findOne({email:req.body.email});
+  if(existingUser)return next(new ApiError(401,"User Already Exists"))
+    let newUser =  await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      role:req.body.role,
+      confirmPassword: req.body.confirmPassword,
+    })
   const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    expiresIn: process.env.JWT_EXPIRES_IN
   });
+  let options={
+    expiresIn:process.env.JWT_EXPIRES_IN,
+    // httpOnly:true,
+    // secure:true,
+  }
+  res.cookie("jwt",token,options);
   res.status(201).json({
     message: "User Successfully Created",
     user:newUser,
@@ -115,6 +127,12 @@ export const forgotPassword=asyncHandler(async(req,res,next)=>
     user.passwordResetTokenExpires=undefined;
     const newToken=getJWTToken(user._id);
     await user.save({validateBeforeSave:true});
+    let options={
+      expiresIn:process.env.JWT_EXPIRES_IN,
+      // httpOnly:true,
+      // secure:true,
+    }
+    res.cookie("jwt",token,options);
     res.status(201).json({
       message:"Password Reset Successfully",
       token:newToken,
@@ -156,5 +174,17 @@ export const updateUser=asyncHandler(async(req,res,next)=>
   res.status(200).json({
     message:"Success!",
     user:updatedUser
+  })
+})
+export const deleteUser=asyncHandler(async(req,res,next)=>
+{
+  let user=await User.findByIdAndUpdate(req.user.id,{active:false});
+  if(!user)
+  {
+    return next(new ApiError(401,"User Not Found!!!"));
+  }
+  res.status(201).send({
+    status:"Success",
+    message:"User Deleted Successfully"
   })
 })

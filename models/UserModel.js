@@ -35,6 +35,11 @@ export const userModel = new mongoose.Schema({
     unique: true,
     required: [true, "A Email is a required Field!!"],
   },
+  active:{
+    type:Boolean,
+    default:true,
+    select:false,
+  },
   photo: String,
   passwordChangeDate: Date,
   passwordResetToken: String,
@@ -48,6 +53,11 @@ userModel.pre("save", async function (next) {
   this.passwordChangeDate = Date.now() - 1000;
   next();
 });
+userModel.pre(/^find/,function(next)
+{
+  this.find({active:{$ne:false}});
+  next();
+})
 userModel.methods.isPasswordCorrect = async function (password) {
   return bcrypt.compare(password, this.password);
 };
