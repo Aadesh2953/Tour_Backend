@@ -16,7 +16,7 @@ connectToDb().then(()=>
 console.log("Mongo DB connected!!!"))
       async function importDevData()
       {
-        const data=JSON.parse(fs.readFileSync(`dev-data/data/tours-simple.json`,"utf-8"))
+        const data=JSON.parse(fs.readFileSync(`dev-data/data/tours.json`,"utf-8"))
         try
         {
            await Tour.create(data);

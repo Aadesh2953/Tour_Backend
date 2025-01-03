@@ -14,7 +14,7 @@ import {
 } from "../controllers/UserController.js";
 import { restrictTo, verifyToken } from "../middlewares/AuthMiddleWare.js";
 let userRouter = Router();
-userRouter.route("/").get(getAllUsers);
+userRouter.route("/").get(verifyToken,getAllUsers);
 userRouter.route("/signup").post(signUpUser);
 userRouter.route("/signin").post(singInUser);
 userRouter.route("/forgotPassword").post(forgotPassword)

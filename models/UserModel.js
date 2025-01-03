@@ -46,7 +46,7 @@ export const userModel = new mongoose.Schema({
   passwordResetTokenExpires: Date,
 });
 userModel.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+if (!this.isModified("password")) {
     return next();
   }
   this.password = await bcrypt.hash(this.password, 12);
@@ -56,6 +56,7 @@ userModel.pre("save", async function (next) {
 userModel.pre(/^find/,function(next)
 {
   this.find({active:{$ne:false}});
+  
   next();
 })
 userModel.methods.isPasswordCorrect = async function (password) {
@@ -63,7 +64,7 @@ userModel.methods.isPasswordCorrect = async function (password) {
 };
 userModel.methods.isPasswordUpdated = function (jwtIat) {
   const passwordUpdatedDate = parseInt(
-    this.passwordChangeDate.getTime() / 1000
+    this.passwordChangeDate?.getTime() / 1000
   );
   
   if (passwordUpdatedDate > jwtIat) {

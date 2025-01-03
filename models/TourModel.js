@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
+import { User } from "./UserModel.js";
 const TourSchema=new mongoose.Schema({
     name:{
         type:String,
@@ -13,12 +14,12 @@ const TourSchema=new mongoose.Schema({
         type:Number,
         required:[true,'A tour Must Not Be Free!!!'],
      },
-     rating:{
-        type:Number,
-        max:[5,'Max Rating must be 5'],
-        min:[1,'Min Rating must be 1'],
-        default:0 
-     },
+    //  rating:{
+    //     type:Number,
+    //     max:[5,'Max Rating must be 5'],
+    //     min:[1,'Min Rating must be 1'],
+    //     default:0 
+    //  },
      duration:{
         type:Number,
         required:[true,'A Tour must Have A duration']
@@ -80,7 +81,35 @@ const TourSchema=new mongoose.Schema({
     secretTour:{
         type:Boolean,
         default:false
-    }
+    },
+    startLocation:{
+       type:{
+        type:String,
+        default:'Point',
+        enum:['Point']
+       },
+       coordinates:[Number],
+       address:String,
+       description:String
+    },
+    locations:[
+        {
+        type:{
+            type:String,
+            default:'Point',
+            enum:['Point']
+            },
+        coordinates:[Number],
+        address:String,
+        description:String
+        }
+    ],
+    guides:[
+        {
+            type:mongoose.Schema.ObjectId,
+            ref:'User'
+        }
+    ]
 },
 {
   toJSON:{virtuals:true},
@@ -93,6 +122,8 @@ const TourSchema=new mongoose.Schema({
 TourSchema.pre(/^find/,function(next)
 {
     this.find({secretTour:{$ne:true}})
+    let filteredFeilds='-__v,-passwordChangedAt,-password,-confirmPassword,-passwordChangeDate,-passwordResetToken,-passwordResetTokenExpires,-role'
+    this.populate({path:'guides',select:filteredFeilds.split(',').join(" ")});
     next()
 })
 TourSchema.virtual("weekDuration").get(function()
@@ -103,6 +134,12 @@ TourSchema.pre("save",function(next)
 {
     this.slug=slugify(this.name,{lower:true})
     next()
+})
+TourSchema.pre('save',async function(next)
+{
+    const guides=this.guides.map(async(id)=>await User.findById(id));
+    this.guides=await Promise.all(guides);
+    next();
 })
 TourSchema.pre("aggregate",function(next)
 {
