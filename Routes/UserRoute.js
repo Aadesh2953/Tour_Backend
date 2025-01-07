@@ -10,6 +10,7 @@ import {
   updatePassword,
   updateUser,
   updateExistingPassword,
+  getLoggedInUser,
 
 } from "../controllers/UserController.js";
 import { restrictTo, verifyToken } from "../middlewares/AuthMiddleWare.js";
@@ -23,4 +24,5 @@ userRouter.route("/updateCurrentPassword").patch(verifyToken,updateExistingPassw
 userRouter.route("/updateUser").patch(verifyToken,updateUser)
 userRouter.route("/deleteUser").patch(verifyToken,restrictTo('admin'),deleteUser)
 // userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
+userRouter.route("/getUser").get(verifyToken,getLoggedInUser);
 export { userRouter };

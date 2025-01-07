@@ -126,6 +126,11 @@ TourSchema.pre(/^find/,function(next)
     this.populate({path:'guides',select:filteredFeilds.split(',').join(" ")});
     next()
 })
+TourSchema.virtual('tourReviews',{
+    ref:'Reviews',
+    foreignField:'tour',
+    localField:'_id',
+});
 TourSchema.virtual("weekDuration").get(function()
 {
   return this.duration/7;

@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { Tour } from "../models/TourModel.js";
 import ApiError from "../utils/ApiError.js";
+import {deleteOne,create,updateOne} from '../utils/factoryFunctions.js'
 class ApiFeature {
   constructor(query, queryString) {
     this.query = query;
@@ -56,6 +57,7 @@ export const getTours = asyncHandler(async (req, res,next) => {
       .limitFeilds()
       .paginate();
     const Tours = await features.query;
+
     if (Tours.length > 0) {
       res.status(201).json({
         status: "Success",
@@ -72,18 +74,10 @@ export const getTours = asyncHandler(async (req, res,next) => {
     }
   }
    )
-export const addTour =asyncHandler( async (req, res,next) => {
-    const newTour = await Tour.create(req.body);
-    res.status(201).json({
-      status: "Success",
-      data: {
-        tour: newTour,
-      },
-    });
-})
+export const addTour = create(Tour);
 export const getTourById = asyncHandler(async (req, res,next) => {
     const id = req.params?.id;
-    const tour = await Tour.findById(id);
+    const tour = await Tour.findById(id).populate('tourReviews');
     if(!tour){
       next(new ApiError(404,'No Tour Found With that id!'))
     }
@@ -93,37 +87,9 @@ export const getTourById = asyncHandler(async (req, res,next) => {
     });
   
 })
-export const updateTourById = asyncHandler(async (req, res,next) => {
-    const id = req.params?.id;
-    const data = req?.body;
-    const updatedTour = await Tour.findByIdAndUpdate(id, data, {
-      runValidations: true,
-      new: true,
-    });
-    if(!updatedTour){
-      next(new ApiError(404,'No Tour Found With that id!'))
-    }
-    res.status(201).json({
-      message: "Success",
-      data: {
-        updatedTour,
-      },
-    });
-})
-export const deleteTourById = asyncHandler(async (req, res,next) => {
-    const id = req.params?.id;
-    const deletedTour = await Tour.findByIdAndDelete(id);
-    if(!deletedTour){
-      next(new ApiError(404,'No Tour Found With that id!'))
-    }
-    res.status(201).json({
-      status: "Success",
-      message: {
-        deletedTour,
-      },
-})
-})
-export const getTourStats = (async(req, res,next) => {
+export const updateTourById = updateOne(Tour);
+export const deleteTourById= deleteOne(Tour);
+export const getTourStats =asyncHandler(async(req, res,next) => {
     let stats = await Tour.aggregate([
        { $match: {
           ratingsAverage: { $gte: 4, $lte: 5 },
