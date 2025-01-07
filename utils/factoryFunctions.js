@@ -1,5 +1,6 @@
 import ApiError from "./ApiError.js";
 import { asyncHandler } from "./AsyncHandler.js";
+import ApiFeature from "./FilteredQuery.js";
 
 export const deleteOne=(Model)=>{
 return  asyncHandler(async (req,res,next)=>
@@ -25,7 +26,7 @@ export const updateOne=(Model)=>{
     })
 }
 
-export const create=(Model)=>{
+export const createOne=(Model)=>{
     return asyncHandler(async(req,res,next)=>
     {
         const newTour = await Model.create(req.body);
@@ -36,4 +37,41 @@ export const create=(Model)=>{
               },
             });
     })
+}
+export const getOne=(Model,populateOptions)=>{
+     return asyncHandler(async(req,res,next)=>
+    {
+        const newTour = await Model.findOne(req.params.id).populate(populateOptions);
+            res.status(201).json({
+              status: "Success",
+              data: {
+                tour: newTour,
+              },
+            });
+    })
+}
+export const readAll=(Model)=>{
+  return asyncHandler(async(req,res,next)=>{
+     const features = new ApiFeature(Model.find(), req.query)
+           .filter()
+           .sort()
+           .limitFeilds()
+           .paginate();
+         const data = await features.query;
+     
+         if (Tours.length > 0) {
+           res.status(201).json({
+             status: "Success",
+             items: Tours.length,
+             data: {
+               data,
+             },
+           });
+         } else {
+           res.status(201).json({
+             status: "Success",
+             message: "No Tour To Display!!",
+           });
+         }
+  })
 }
