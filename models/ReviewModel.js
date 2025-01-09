@@ -27,6 +27,35 @@ const reviewSchema=new mongoose.Schema({
 { 
     timeStamps:true
 })
+reviewSchema.statics.methods=async function calculateAverageRatings(tourId)
+{
+    const stats=await this.aggregate([
+        {
+            $match:{tour:tourId}
+        },
+        {
+           $group:{
+            _id:"$tour",
+            nRating:{$sum:1},
+            avgRatings:{$avg:1},
+           }
+        }
+    ]);
+    console.log('stats',stats);
+}
+await TourSchema.findByIdAndUpdate(tourId,{
+    ratingsAverage:stats[0].avgRatings, 
+    ratingsQuantity:stats[0].nRating   
+})
+reviewSchema.post('save',function()
+{
+    this.constructor.calculateAverageRatings(this.tour);
+}
+)
+reviewSchema.pre(/^findOneAnd/,async function()
+{
+  this.r=await this.findOne();
+})
 reviewSchema.pre(/^find/,function(next)
 {
     this.populate({

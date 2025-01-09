@@ -41,7 +41,8 @@ export const createOne=(Model)=>{
 export const getOne=(Model,populateOptions)=>{
      return asyncHandler(async(req,res,next)=>
     {
-        const newTour = await Model.findOne(req.params.id).populate(populateOptions);
+        
+        const newTour = await Model.findById(req.params.id).populate(populateOptions);
             res.status(201).json({
               status: "Success",
               data: {

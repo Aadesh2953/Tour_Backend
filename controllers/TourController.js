@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { Tour } from "../models/TourModel.js";
-import {deleteOne,create,updateOne,getOne, readAll} from '../utils/factoryFunctions.js'
+import {deleteOne,createOne,updateOne,getOne, readAll} from '../utils/factoryFunctions.js'
 
 export const injectQuery = async (req, res, next) => {
   req.query.sort = "ratingAverage";
@@ -9,7 +9,7 @@ export const injectQuery = async (req, res, next) => {
   next();
 };
 export const getTours = readAll(Tour);
-export const addTour = create(Tour);
+export const addTour = createOne(Tour);
 export const getTourById = getOne(Tour,'tourReviews');
 export const updateTourById = updateOne(Tour);
 export const deleteTourById= deleteOne(Tour);

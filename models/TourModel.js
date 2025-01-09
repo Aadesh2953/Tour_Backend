@@ -119,6 +119,8 @@ const TourSchema=new mongoose.Schema({
     timeStamps:true
 })
 // TourSchema.set('toJSON',{virtuals:true})
+TourSchema.index({price:1,ratingsAverage:-1});
+TourSchema.index({slug:1});
 TourSchema.pre(/^find/,function(next)
 {
     this.find({secretTour:{$ne:true}})
@@ -133,7 +135,7 @@ TourSchema.virtual('tourReviews',{
 });
 TourSchema.virtual("weekDuration").get(function()
 {
-  return this.duration/7;
+  return this.duration/7;   
 })
 TourSchema.pre("save",function(next)
 {

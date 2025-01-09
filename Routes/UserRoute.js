@@ -20,9 +20,10 @@ userRouter.route("/signup").post(signUpUser);
 userRouter.route("/signin").post(singInUser);
 userRouter.route("/forgotPassword").post(forgotPassword)
 userRouter.route("/resetPassword/:token").patch(updatePassword)
+userRouter.use(verifyToken);
 userRouter.route("/updateCurrentPassword").patch(verifyToken,updateExistingPassword)
-userRouter.route("/updateUser").patch(verifyToken,updateUser)
+userRouter.route("/updateUser").patch(verifyToken,restrictTo('user'),updateUser)
 userRouter.route("/deleteUser").patch(verifyToken,restrictTo('admin'),deleteUser)
 // userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
-userRouter.route("/getUser").get(verifyToken,getLoggedInUser);
+userRouter.route("/getUser").get(verifyToken,restrictTo('admin','user'),getLoggedInUser);
 export { userRouter };
