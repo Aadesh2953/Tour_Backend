@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { Tour } from "../models/TourModel.js";
 import {deleteOne,createOne,updateOne,getOne, readAll} from '../utils/factoryFunctions.js'
+import ApiError from "../utils/ApiError.js";
 
 export const injectQuery = async (req, res, next) => {
   req.query.sort = "ratingAverage";
@@ -76,4 +77,20 @@ export const mostSellingTourData=asyncHandler(async(req,res)=>
     data:{topSellingTour},
    
   })
+})
+export const getToursWithIn=asyncHandler(async(req,res,next)=>{
+  let {distance,latlng,unit}=req.params;
+  const [lat,lng]=latlng.split(',');
+  if(!lat||!lng)
+  {
+    return next(new ApiError(400,'Please Provide Latitude and Longitude'));
+  }
+  const radius=unit==='mi'?distance/3963.2:distance/6378.1;
+  const Tours=await Tour.find({startLocation:{$geoWithin:{$centerSphere:[[lat,lng],radius]}}});
+  res.status(200).send({
+    status:"Success",
+    results:Tours.length,
+    data:{Tours}
+  })
+  
 })

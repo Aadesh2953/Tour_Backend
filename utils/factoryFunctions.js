@@ -29,7 +29,7 @@ export const updateOne=(Model)=>{
 export const createOne=(Model)=>{
     return asyncHandler(async(req,res,next)=>
     {
-        const newTour = await Model.create(req.body);
+        const newData = await Model.create(req.body);
             res.status(201).json({
               status: "Success",
               data: {
@@ -42,11 +42,11 @@ export const getOne=(Model,populateOptions)=>{
      return asyncHandler(async(req,res,next)=>
     {
         
-        const newTour = await Model.findById(req.params.id).populate(populateOptions);
+        const data = await Model.findById(req.params.id).populate(populateOptions);
             res.status(201).json({
               status: "Success",
               data: {
-                tour: newTour,
+                tour: data,
               },
             });
     })
@@ -60,10 +60,10 @@ export const readAll=(Model)=>{
            .paginate();
          const data = await features.query;
      
-         if (Tours.length > 0) {
+         if (data.length > 0) {
            res.status(201).json({
              status: "Success",
-             items: Tours.length,
+             items: data.length,
              data: {
                data,
              },

@@ -27,6 +27,7 @@ const reviewSchema=new mongoose.Schema({
 { 
     timeStamps:true
 })
+reviewSchema.index({tour:1,user:1},{unique:true});
 reviewSchema.statics.methods=async function calculateAverageRatings(tourId)
 {
     const stats=await this.aggregate([
@@ -37,16 +38,15 @@ reviewSchema.statics.methods=async function calculateAverageRatings(tourId)
            $group:{
             _id:"$tour",
             nRating:{$sum:1},
-            avgRatings:{$avg:1},
+            avgRatings:{$avg:"$ratings"},
            }
         }
     ]);
-    console.log('stats',stats);
+    await Tour.findByIdAndUpdate(tourId,{
+        ratingsAverage:stats[0].avgRatings, 
+        ratingsQuantity:stats[0].nRating   
+    })
 }
-await TourSchema.findByIdAndUpdate(tourId,{
-    ratingsAverage:stats[0].avgRatings, 
-    ratingsQuantity:stats[0].nRating   
-})
 reviewSchema.post('save',function()
 {
     this.constructor.calculateAverageRatings(this.tour);
@@ -55,6 +55,10 @@ reviewSchema.post('save',function()
 reviewSchema.pre(/^findOneAnd/,async function()
 {
   this.r=await this.findOne();
+})
+reviewSchema.post(/^findOneAnd/,async function()
+{
+   await this.r.constructor.calculateAverageRatings(this.tour);
 })
 reviewSchema.pre(/^find/,function(next)
 {

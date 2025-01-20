@@ -121,6 +121,7 @@ const TourSchema=new mongoose.Schema({
 // TourSchema.set('toJSON',{virtuals:true})
 TourSchema.index({price:1,ratingsAverage:-1});
 TourSchema.index({slug:1});
+TourSchema.index({startLocation:"2dsphere"});
 TourSchema.pre(/^find/,function(next)
 {
     this.find({secretTour:{$ne:true}})
