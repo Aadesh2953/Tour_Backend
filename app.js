@@ -9,7 +9,6 @@ import mongoSanitize from "express-mongo-sanitize";
 import helmet from "helmet";
 import xss from 'xss-clean';
 import hpp from 'hpp';
-import cors from 'cors';
 const app = express();
 app.use(helmet());
 

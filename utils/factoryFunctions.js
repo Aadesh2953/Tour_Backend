@@ -45,9 +45,7 @@ export const getOne=(Model,populateOptions)=>{
         const data = await Model.findById(req.params.id).populate(populateOptions);
             res.status(201).json({
               status: "Success",
-              data: {
-                tour: data,
-              },
+              data
             });
     })
 }
