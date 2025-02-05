@@ -1,4 +1,5 @@
 import express from "express";
+import cors from 'cors'
 import ApiError from "./utils/ApiError.js";
 import { apiErrorHandler } from "./controllers/ErrorController.js";
 import { tourRouter } from "./Routes/TourRoute.js";
@@ -23,7 +24,7 @@ app.use(mongoSanitize());
 app.use(xss());
 app.use(cors("*"))
 const limiter=rateLimit({
-  max:100,
+  max:1000,
   windowMs:60*60*1000,
   message:"Too Many Requests from this IP,please try again in an hour!!"
 })

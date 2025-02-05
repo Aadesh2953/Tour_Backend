@@ -53,6 +53,7 @@ export const getOne=(Model,populateOptions)=>{
 }
 export const readAll=(Model)=>{
   return asyncHandler(async(req,res,next)=>{
+    console.log('query',req.query)
      const features = new ApiFeature(Model.find(), req.query)
            .filter()
            .sort()

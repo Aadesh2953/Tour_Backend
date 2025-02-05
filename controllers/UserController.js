@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { filteredUser } from "../utils/filteredFiedls.js";
 import {deleteOne,updateOne,createOne,getOne,readAll} from '../utils/factoryFunctions.js'
 import jwt from "jsonwebtoken";
+
 const filteredBody = (body, key) => {
   for (let elements in body) {
     if (elements[key]) delete elements[key];
@@ -29,7 +30,7 @@ export const getJWTToken = (id) => {
 export const singInUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (!email  || !password) {
     return next(new ApiError(404, "Please enter a valid Email or Password"));
   }
 
@@ -71,7 +72,7 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     role: req.body.role,
     confirmPassword: req.body.confirmPassword,
   });
-  const token = getJWTToken(req.user._id);
+  const token = getJWTToken(newUser._id);
   let options = {
     expiresIn: new Date(
       Date.now() + process.env.JWT_EXPIRES_IN * 1000 * 60 * 60

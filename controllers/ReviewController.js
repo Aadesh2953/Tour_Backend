@@ -73,5 +73,19 @@ export const addReview = asyncHandler(async (req, res, next) => {
     review,
   });
 });
+export const updatedReview=asyncHandler(async(req,res,next)=>
+{
+    if(!req.params.id)return next(new ApiError(401,'Please Enter a Valid Tour Id'))
+      if(!req.body)return next(new ApiError(401,'Please Enter a Valid Data'))
+      const updatedReview=await Reviews.findByIdAndUpdate(req.params.id,{...req.body},{
+    runValidations:true,
+    new:true
+  })
+  res.status(200).send({
+    status:sucess,
+    message:"Tour Review Updated Successfully",
+    data:updateReview
+  })
 
+})
 export const deleteReview=deleteOne(Reviews);
