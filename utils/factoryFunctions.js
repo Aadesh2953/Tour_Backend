@@ -33,7 +33,7 @@ export const createOne=(Model)=>{
             res.status(201).json({
               status: "Success",
               data: {
-                tour: newTour,
+                tour: newData,
               },
             });
     })
@@ -59,14 +59,14 @@ export const readAll=(Model)=>{
            .limitFeilds()
            .paginate();
          const data = await features.query;
-     
+        //  console.log('query',req.query?.page*1*req.query?.limit*1);
+         const hasNext=data.length<req.query?.page*1*req.query?.limit*1?false:true;
          if (data.length > 0) {
            res.status(201).json({
              status: "Success",
              items: data.length,
-             data: {
-               data,
-             },
+             data:[...data],
+             hasNext
            });
          } else {
            res.status(201).json({

@@ -41,6 +41,11 @@ export const getTourStats =asyncHandler(async(req, res,next) => {
 export const mostSellingTourData=asyncHandler(async(req,res)=>
 {
   let year=req.query?.year
+  if(!year)
+  {
+    year=2022;
+    // console.log('year',year);
+  }
   const topSellingTour=await Tour.aggregate([
   {
      $unwind:"$startDates"
@@ -57,7 +62,8 @@ export const mostSellingTourData=asyncHandler(async(req,res)=>
     $group:{
       _id:{$month:"$startDates"},
       totalTours:{$sum:1},
-      name:{$push:'$name'}
+      tours: { $push: "$$ROOT" },
+      // startDates:{$push:'$startDates'}
     }
   },
   {
@@ -74,7 +80,7 @@ export const mostSellingTourData=asyncHandler(async(req,res)=>
   res.status(200).send({
     status:"Success",
     total:topSellingTour.length,
-    data:{topSellingTour},
+    data:topSellingTour[0],
    
   })
 })
@@ -93,4 +99,35 @@ export const getToursWithIn=asyncHandler(async(req,res,next)=>{
     data:{Tours}
   })
   
+})
+export const getNearestTours=asyncHandler(async(req,res,next)=>
+{
+   let {latlng,unit}=req.params;
+   let [lat,lng]=latlng.split(',');
+   if(!lat||!lng)
+   {
+    next( new ApiError(400,'Please Provide Latitude and Longitude'));
+   }
+   const multiplier=unit==='mi'?0.000621371:0.001;
+  const nearestTours=await Tour.aggregate([
+    {
+      $geoNear:{
+        near:{
+          type:'Point',
+          coordinates:[lng*1,lat*1],
+          distanceField:"distance",
+          distanceMultiplier:multiplier
+        },
+        $project:{
+          distance:1,
+          name:1
+        }
+      }
+    }
+  ])
+  res.status(200).send({
+    message:"Success",
+    items:nearestTours.length,
+    data:nearestTours
+  })
 })

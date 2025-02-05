@@ -17,7 +17,7 @@ export const userModel = new mongoose.Schema({
   confirmPassword: {
     type: String,
     required: [true, "A password is a required Field!!"],
-    minLength: [true, "minLength must be of 8 characters"],
+    minLength: [8, "minLength must be of 8 characters"],
     validate: {
       validator: function (val) {
         return val === this.password;
@@ -56,7 +56,6 @@ if (!this.isModified("password")) {
 userModel.pre(/^find/,function(next)
 {
   this.find({active:{$ne:false}});
-  
   next();
 })
 userModel.methods.isPasswordCorrect = async function (password) {

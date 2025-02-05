@@ -28,6 +28,7 @@ export const verifyToken=asyncHandler(async(req,res,next)=>
    {
     return next(new ApiError(401,'Password Updated Please Login Again to Continue!!'));
    }
+   console.log('re')
     req.user=user
     next();
 
@@ -35,7 +36,8 @@ export const verifyToken=asyncHandler(async(req,res,next)=>
 export const restrictTo=(...roles)=>
 {
     return (req,res,next)=>{
-        if(!roles.includes(req.user.role))
+        console.log('user',req.user);
+        if(!roles|| !roles.includes(req.user?.role))
         {
             return next(new ApiError(403,'You are not Authorized to Access this Route!!'))
         }
