@@ -95,9 +95,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
     return next(new ApiError(404, "User Not Found With This Email!!"));
   }
   const generateToken = await user.createPasswordResetToken();
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/resetPassword/${generateToken}`;
+  const resetUrl = `http://localhost:5173/forgotPassword/${generateToken}`;
   const message = `Forgot Your Password? No worries Click on the link below to reset your password!! <br/> ${resetUrl}`;
   const options = {
     email: userEmail,
@@ -148,8 +146,6 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: true });
   let options = {
     expiresIn: process.env.JWT_EXPIRES_IN,
-    // httpOnly:true,
-    // secure:true,
   };
   res.cookie("jwt", token, options);
   res.status(201).json({

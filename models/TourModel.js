@@ -109,7 +109,11 @@ const TourSchema=new mongoose.Schema({
             type:mongoose.Schema.ObjectId,
             ref:'User'
         }
-    ]
+    ],
+    createdBy:{
+        type:mongoose.Schema.ObjectId,
+        ref:'User'
+    }
 },
 {
   toJSON:{virtuals:true},
@@ -147,6 +151,7 @@ TourSchema.pre('save',async function(next)
 {
     const guides=this.guides.map(async(id)=>await User.findById(id));
     this.guides=await Promise.all(guides);
+
     next();
 })
 TourSchema.pre("aggregate",function(next)
