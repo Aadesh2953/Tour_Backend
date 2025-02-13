@@ -36,7 +36,7 @@ export const verifyToken=asyncHandler(async(req,res,next)=>
 export const restrictTo=(...roles)=>
 {
     return (req,res,next)=>{
-        console.log('user',req.user);
+     
         if(!roles|| !roles.includes(req.user?.role))
         {
             return next(new ApiError(403,'You are not Authorized to Access this Route!!'))

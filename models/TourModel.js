@@ -113,6 +113,10 @@ const TourSchema=new mongoose.Schema({
     createdBy:{
         type:mongoose.Schema.ObjectId,
         ref:'User'
+    },
+    isReviewSubmitted:{
+     type:Boolean,
+     default:false
     }
 },
 {

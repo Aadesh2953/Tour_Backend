@@ -45,7 +45,7 @@ export const getReviews = asyncHandler(async (req, res, next) => {
 export const addReview = asyncHandler(async (req, res, next) => {
   if(!req.body.tour)req.body.tour=req.params.tourId;
   if(!req.body.user)req.body.user=req.user._id;
-  if (!req.body.review || !req.body.rating) {
+  if (!req.body.review || !req.body.ratings) {
     next(
       new ApiError(
         401,
@@ -57,7 +57,7 @@ export const addReview = asyncHandler(async (req, res, next) => {
   if (!tour) {
     next(new ApiError(401, "Invalid Request Please Enter a Valid Tour Id"));
   }
-  const user = await User.findById(req.body.user);
+  const user = await User.findById(req.body.user._id);
   if (!user) {
     next(new ApiError(401, "User Not Found!!!"));
   }
@@ -68,6 +68,7 @@ export const addReview = asyncHandler(async (req, res, next) => {
     user: user._id,
   });
   res.status(200).send({
+    success:true,
     status: "Success",
     message: "Review Added Successfully",
     review,

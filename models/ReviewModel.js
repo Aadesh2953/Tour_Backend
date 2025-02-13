@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import {Tour}  from './TourModel.js'
+import { User } from './UserModel.js';
 const reviewSchema=new mongoose.Schema({
     ratings:{
         type:Number,
@@ -23,7 +24,7 @@ const reviewSchema=new mongoose.Schema({
        type:mongoose.Schema.ObjectId,
        ref:'User',
        required:[true,'Review must belong to a user']
-    }
+    },
 },
 { 
     timeStamps:true
@@ -31,10 +32,11 @@ const reviewSchema=new mongoose.Schema({
 reviewSchema.index({tour:1,user:1},{unique:true});
 reviewSchema.post('save',async function()
 {
-  await this.constructor.calculateAverageRatings(this.tour);
+    
+  await this.constructor.calculateAverageRatings(this.tour,this.user);
 }
 )
-reviewSchema.statics.calculateAverageRatings=async function(tourId)
+reviewSchema.statics.calculateAverageRatings=async function(tourId,userId)
 {
     const stats=await this.aggregate([
         {
@@ -48,10 +50,15 @@ reviewSchema.statics.calculateAverageRatings=async function(tourId)
            }
         }
     ]);
+    // 
+    let user=await User.findById(userId);
+    
     await Tour.findByIdAndUpdate(tourId,{
         ratingsAverage:stats[0].avgRatings, 
-        ratingsQuantity:stats[0].nRating   
+        ratingsQuantity:stats[0].nRating ,
+        isReviewSubmitted:!!user
     })
+    
 }
 
 reviewSchema.pre(/^findOneAnd/,async function()
