@@ -40,6 +40,7 @@ export const userModel = new mongoose.Schema({
     default:true,
     select:false,
   },
+
   photo: String,
   passwordChangeDate: Date,
   passwordResetToken: String,

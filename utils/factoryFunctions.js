@@ -51,8 +51,12 @@ export const createOne=(Model)=>{
 export const getOne=(Model,populateOptions)=>{
      return asyncHandler(async(req,res,next)=>
     {
+        // console.log('user',req.user)
+        let data = await Model.findById(req.params.id).populate(populateOptions);
         
-        const data = await Model.findById(req.params.id).populate(populateOptions);
+        let isReviewSubmittedFinal=await data?.tourReviews?.some((review)=>review.user.id==req.user.id)
+       
+          data={...data,isReviewSubmittedFinal}
             res.status(201).json({
               status: "Success",
               data
