@@ -18,6 +18,6 @@ tourRouter
   .route("/:id")
   .post(getTourById)
   .patch(restrictTo('admin,lead-guide'),updateTourById)
-  .delete(restrictTo('admin,lead-guide'),deleteTourById);
+  .delete(deleteTourById);
 tourRouter.route("/nearest-tours/:latlng/unit/:unit").get(getNearestTours);
 export {tourRouter}

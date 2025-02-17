@@ -109,7 +109,11 @@ const TourSchema=new mongoose.Schema({
             type:mongoose.Schema.ObjectId,
             ref:'User'
         }
-    ]
+    ],
+    createdBy:{
+        type:mongoose.Schema.ObjectId,
+        ref:'User'
+    }
 },
 {
   toJSON:{virtuals:true},
@@ -140,13 +144,18 @@ TourSchema.virtual("weekDuration").get(function()
 })
 TourSchema.pre("save",function(next)
 {
+    console.log('beforeSAVE')
     this.slug=slugify(this.name,{lower:true})
     next()
 })
 TourSchema.pre('save',async function(next)
 {
+    // console.log('before Save called')
     const guides=this.guides.map(async(id)=>await User.findById(id));
     this.guides=await Promise.all(guides);
+    let email=this.createdBy
+    let user=await User.findOne({email});
+    
     next();
 })
 TourSchema.pre("aggregate",function(next)

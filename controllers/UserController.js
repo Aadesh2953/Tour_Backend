@@ -5,7 +5,9 @@ import { sendEmail } from "../utils/email.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { filteredUser } from "../utils/filteredFiedls.js";
 import {deleteOne,updateOne,createOne,getOne,readAll} from '../utils/factoryFunctions.js'
+import { Tour } from "../models/TourModel.js";
 import jwt from "jsonwebtoken";
+import ApiFeature from "../utils/FilteredQuery.js";
 const filteredBody = (body, key) => {
   for (let elements in body) {
     if (elements[key]) delete elements[key];
@@ -62,6 +64,7 @@ export const singInUser = asyncHandler(async (req, res, next) => {
 });
 
 export const signUpUser = asyncHandler(async (req, res, next) => {
+  console.log('body',req.body)
   const existingUser = await User.findOne({ email: req.body.email });
   if (existingUser) return next(new ApiError(401, "User Already Exists"));
   let newUser = await User.create({
@@ -71,7 +74,8 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     role: req.body.role,
     confirmPassword: req.body.confirmPassword,
   });
-  const token = getJWTToken(req.user._id);
+  // console.log('user,',req.user._id);
+  const token = getJWTToken(newUser._id);
   let options = {
     expiresIn: new Date(
       Date.now() + process.env.JWT_EXPIRES_IN * 1000 * 60 * 60
@@ -216,4 +220,19 @@ export const getLoggedInUser=asyncHandler(async(req,res,next)=>
     message:"user Found Successfully!!",
     data:user,
   })
+})
+export const getMyTours=asyncHandler(async(req,res,next)=>{
+  console.log('here');
+  const userId=req.user._id;
+   let feature=new ApiFeature(Tour.find({createdBy:userId}),req.query);
+   let MyTours =await feature.query;
+   let hasNext=false
+   if(req.query?.page) hasNext=MyTours.length<req.query?.page*1*req.query?.limit*1?false:true;
+   res.status(200).send({
+    success:true,
+    data:MyTours,
+    hasNext,
+    status:"success"
+   })
+   
 })

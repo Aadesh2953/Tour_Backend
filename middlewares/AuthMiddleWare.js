@@ -28,7 +28,6 @@ export const verifyToken=asyncHandler(async(req,res,next)=>
    {
     return next(new ApiError(401,'Password Updated Please Login Again to Continue!!'));
    }
-   console.log('re')
     req.user=user
     next();
 
