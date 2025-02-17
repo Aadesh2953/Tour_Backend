@@ -213,7 +213,7 @@ export const getLoggedInUser=asyncHandler(async(req,res,next)=>
   res.status(200).send({
     status:"Success",
     message:"user Found Successfully!!",
-    data:user,
+  data:user,
   })
 })
 export const getMyTours=asyncHandler(async(req,res,next)=>{

@@ -4,7 +4,7 @@ import {restrictTo, verifyToken} from "../middlewares/AuthMiddleWare.js"
 import { reviewRouter } from "./ReviewRoute.js";
 const tourRouter = Router();
 // tourRouter.param('id',checkId)QUERY MIDDLEWARE THIS IS QUERY MIDDLEWARE
-tourRouter.use('/:tourId/reviews',verifyToken,restrictTo('user'),reviewRouter);
+tourRouter.use('/:tourId/reviews',verifyToken,restrictTo('user','admin'),reviewRouter);
 tourRouter.route('/top-5-tour').get(restrictTo('user'),injectQuery,getTours)
 tourRouter.route("/getTourStats").get(verifyToken,restrictTo('admin'),getTourStats)
 tourRouter.route("/topSellers").get(mostSellingTourData)
