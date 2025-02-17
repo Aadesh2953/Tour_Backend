@@ -1,7 +1,13 @@
+import { User } from "../models/UserModel.js";
 import ApiError from "./ApiError.js";
 import { asyncHandler } from "./AsyncHandler.js";
 import ApiFeature from "./FilteredQuery.js";
-
+async function getUserId(email)
+{
+  
+  let user_id=await User.findOne({email})
+  return user_id._id
+}
 export const deleteOne=(Model)=>{
 return  asyncHandler(async (req,res,next)=>
 {
@@ -29,7 +35,11 @@ export const updateOne=(Model)=>{
 export const createOne=(Model)=>{
     return asyncHandler(async(req,res,next)=>
     {
+          let userId=await getUserId(req.body.createdBy)
+           req.body={...req.body,createdBy:userId}
+           console.log('body',req.body)
         const newData = await Model.create(req.body);
+       
             res.status(201).json({
               status: "Success",
               data: {
@@ -41,13 +51,15 @@ export const createOne=(Model)=>{
 export const getOne=(Model,populateOptions)=>{
      return asyncHandler(async(req,res,next)=>
     {
+        // console.log('user',req.user)
+        let data = await Model.findById(req.params.id).populate(populateOptions);
         
-        const data = await Model.findById(req.params.id).populate(populateOptions);
+        let isReviewSubmitted=await data?.tourReviews?.some((review)=>review.user.id==req.user.id)
+       
+          data={...data,isReviewSubmitted}
             res.status(201).json({
               status: "Success",
-              data: {
-                tour: data,
-              },
+              data
             });
     })
 }

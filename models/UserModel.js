@@ -14,17 +14,17 @@ export const userModel = new mongoose.Schema({
     required: [true, "A password is a required Field!!"],
     minLength: [true, "minLength must be of 8 characters"],
   },
-  confirmPassword: {
-    type: String,
-    required: [true, "A password is a required Field!!"],
-    minLength: [8, "minLength must be of 8 characters"],
-    validate: {
-      validator: function (val) {
-        return val === this.password;
-      },
-      message: "Password and ConfirmPassword must be same",
-    },
-  },
+  // confirmPassword: {
+  //   type: String,
+  //   required: [true, "A password is a required Field!!"],
+  //   minLength: [8, "minLength must be of 8 characters"],
+  //   validate: {
+  //     validator: function (val) {
+  //       return val === this.password;
+  //     },
+  //     message: "Password and ConfirmPassword must be same",
+  //   },
+  // },
   role: {
     type: String,
     enum: ["user", "admin", "guide", "lead-guide"],
@@ -40,6 +40,7 @@ export const userModel = new mongoose.Schema({
     default:true,
     select:false,
   },
+
   photo: String,
   passwordChangeDate: Date,
   passwordResetToken: String,

@@ -1,4 +1,5 @@
 import express from "express";
+import cors from 'cors'
 import ApiError from "./utils/ApiError.js";
 import { apiErrorHandler } from "./controllers/ErrorController.js";
 import { tourRouter } from "./Routes/TourRoute.js";
@@ -8,7 +9,6 @@ import mongoSanitize from "express-mongo-sanitize";
 import helmet from "helmet";
 import xss from 'xss-clean';
 import hpp from 'hpp';
-import cors from 'cors';
 const app = express();
 app.use(helmet());
 
@@ -23,7 +23,7 @@ app.use(mongoSanitize());
 app.use(xss());
 app.use(cors("*"))
 const limiter=rateLimit({
-  max:100,
+  max:1000,
   windowMs:60*60*1000,
   message:"Too Many Requests from this IP,please try again in an hour!!"
 })
