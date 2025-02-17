@@ -2,11 +2,18 @@ import { User } from "../models/UserModel.js";
 import ApiError from "./ApiError.js";
 import { asyncHandler } from "./AsyncHandler.js";
 import ApiFeature from "./FilteredQuery.js";
+<<<<<<< Updated upstream
 async function getUserId(email)
 {
   
   let user_id=await User.findOne({email})
   return user_id._id
+=======
+const getUserId=async(email)=>
+{
+   const user=await User.findOne({email});
+   return user._id;
+>>>>>>> Stashed changes
 }
 export const deleteOne=(Model)=>{
 return  asyncHandler(async (req,res,next)=>
@@ -35,9 +42,21 @@ export const updateOne=(Model)=>{
 export const createOne=(Model)=>{
     return asyncHandler(async(req,res,next)=>
     {
+<<<<<<< Updated upstream
           let userId=await getUserId(req.body.createdBy)
            req.body={...req.body,createdBy:userId}
            console.log('body',req.body)
+=======
+      // if(Model)
+      // {
+      //   console.log("Hi")
+      // }
+      if(req.body.createdBy)
+      {
+         let user_id=await getUserId(req.body.createdBy)
+         req.body={...req.body,createdBy:user_id}
+      }
+>>>>>>> Stashed changes
         const newData = await Model.create(req.body);
        
             res.status(201).json({
