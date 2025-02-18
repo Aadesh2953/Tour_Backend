@@ -76,16 +76,18 @@ export const addReview = asyncHandler(async (req, res, next) => {
 });
 export const updatedReview=asyncHandler(async(req,res,next)=>
 {
+  // console.log('id',req.params.id);
     if(!req.params.id)return next(new ApiError(401,'Please Enter a Valid Tour Id'))
       if(!req.body)return next(new ApiError(401,'Please Enter a Valid Data'))
-      const updatedReview=await Reviews.findByIdAndUpdate(req.params.id,{...req.body},{
-    runValidations:true,
+      let updatedReview=await Reviews.findByIdAndUpdate(req.params.id,{...req.body},{
+    runValidators:true,
     new:true
   })
+  // console.log('updated',updatedReview)
   res.status(200).send({
-    status:sucess,
+    success:true,
     message:"Tour Review Updated Successfully",
-    data:updateReview
+    data:updatedReview
   })
 
 })

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { Tour } from './TourModel.js';
 const reviewSchema=new mongoose.Schema({
     ratings:{
         type:Number,
@@ -47,24 +48,30 @@ reviewSchema.statics.calculateAverageRatings=async function (tourId)
         ratingsQuantity:stats[0].nRating   
     })
 }
-reviewSchema.post('save',function()
+reviewSchema.post('save',async function(next)
 {
-    this.constructor.calculateAverageRatings(this.tour);
+    console.log('here')
+   await this.constructor.calculateAverageRatings(this.tour);
+    next();
 }
 )
-reviewSchema.pre(/^findOneAnd/,async function()
+reviewSchema.pre(/^findOneAnd/,async function(next)
 {
   this.r=await this.findOne();
+  console.log('here')
+  next()
 })
-reviewSchema.post(/^findOneAnd/,async function()
+reviewSchema.post(/^findOneAnd/,async function(next)
 {
    await this.r.constructor.calculateAverageRatings(this.tour);
+   console.log('here2')
+   next();
 })
 reviewSchema.pre(/^find/,function(next)
 {
     this.populate({
         path:'user',
-        select:'name id'
+        select:'name id email'
     })
     next();
 } 
