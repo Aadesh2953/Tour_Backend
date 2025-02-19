@@ -64,15 +64,20 @@ export const singInUser = asyncHandler(async (req, res, next) => {
 });
 
 export const signUpUser = asyncHandler(async (req, res, next) => {
-  console.log('body',req.body)
-  const existingUser = await User.findOne({ email: req.body.email });
+  
+  const existingUser = await User.findOne({$or:[{ email: req.body.email },{name:req.body.name}]});
   if (existingUser) return next(new ApiError(401, "User Already Exists"));
+  if(req.file)
+  {
+    console.log('file',req.file)
+  }
   let newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
     role: req.body.role,
     confirmPassword: req.body.confirmPassword,
+
   });
   const token = getJWTToken(newUser._id);
   let options = {
