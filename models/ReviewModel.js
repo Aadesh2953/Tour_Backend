@@ -50,22 +50,22 @@ reviewSchema.statics.calculateAverageRatings=async function (tourId)
 }
 reviewSchema.post('save',async function(next)
 {
-    console.log('here')
+    
    await this.constructor.calculateAverageRatings(this.tour);
     next();
 }
 )
 reviewSchema.pre(/^findOneAnd/,async function(next)
 {
-  this.r=await this.findOne();
-  console.log('here')
+    console.log('this',this)
+    const query=this.getQuery();
+  this.r=await this.model.findOne(query);
   next()
 })
 reviewSchema.post(/^findOneAnd/,async function(next)
 {
-   await this.r.constructor.calculateAverageRatings(this.tour);
-   console.log('here2')
-   next();
+   await this.r.constructor.calculateAverageRatings(this.r.tour);
+//    next();
 })
 reviewSchema.pre(/^find/,function(next)
 {
