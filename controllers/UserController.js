@@ -8,6 +8,7 @@ import {deleteOne,updateOne,createOne,getOne,readAll} from '../utils/factoryFunc
 import { Tour } from "../models/TourModel.js";
 import jwt from "jsonwebtoken";
 import ApiFeature from "../utils/FilteredQuery.js";
+import { uploadOnCloudinary } from "../cloudinary/cloudinary.js";
 const filteredBody = (body, key) => {
   for (let elements in body) {
     if (elements[key]) delete elements[key];
@@ -69,7 +70,7 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
   if (existingUser) return next(new ApiError(401, "User Already Exists"));
   if(req.file)
   {
-    console.log('file',req.file)
+    imageUrl=await uploadOnCloudinary(req.file.path);
   }
   let newUser = await User.create({
     name: req.body.name,
@@ -77,7 +78,7 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     password: req.body.password,
     role: req.body.role,
     confirmPassword: req.body.confirmPassword,
-
+    photo:imageUrl
   });
   const token = getJWTToken(newUser._id);
   let options = {

@@ -1,11 +1,11 @@
 import multer from 'multer'
 const  storage=multer.diskStorage({
-    destination:(req,file,cb)=>{
+    destination:function(req,file,cb){
         cb(null,'./public/temp')
     },
-    filename:(req,file,cb)=>{
-        cb(null,file.originalname+'tour')
+    filename:function(req,file,cb){
+        cb(null,file.originalname);
     },
     
 })
-export const upload=multer({storage,limits:{fileSize:5*1024*1024}});
+export const upload=multer({storage:storage,limits:{fileSize:5*1024*1024}});

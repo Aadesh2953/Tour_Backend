@@ -18,7 +18,8 @@ import { upload } from "../middlewares/multerMiddleWare.js";
 import { restrictTo, verifyToken } from "../middlewares/AuthMiddleWare.js";
 let userRouter = Router();
 userRouter.route("/").get(verifyToken,getAllUsers);
-userRouter.route("/signup").post(upload.single({name:'profilePic',maxCount:1}),signUpUser);
+userRouter.route("/signup").post(upload.single('photo')
+,signUpUser);
 userRouter.route("/signin").post(singInUser);
 userRouter.route("/forgotPassword").post(forgotPassword)
 userRouter.route("/resetPassword/:token").patch(updatePassword)
