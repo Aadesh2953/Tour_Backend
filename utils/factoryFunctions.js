@@ -1,3 +1,4 @@
+import { uploadOnCloudinary } from "../cloudinary/cloudinary.js";
 import { User } from "../models/UserModel.js";
 import ApiError from "./ApiError.js";
 import { asyncHandler } from "./AsyncHandler.js";
@@ -21,7 +22,24 @@ return  asyncHandler(async (req,res,next)=>
 export const updateOne=(Model)=>{
     return asyncHandler(async(req,res,next)=>
     {
-        const updatedItem=await Model.findByIdAndUpdate(req.params.id);
+      let imageCover,tourImages ;
+      if (req.files) {
+        const imageCoverPromise = req.files.imageCover
+          ? uploadOnCloudinary(req.files.imageCover[0].path)
+          : null;
+        const tourImagesPromises = req.files.tourImages
+          ? req.files.tourImages.map(file => uploadOnCloudinary(file.path))
+          : [];
+      
+        // Execute uploads in parallel
+        const [imageCoverResult, tourImagesResults] = await Promise.all([
+          imageCoverPromise,
+          Promise.all(tourImagesPromises),
+        ]);
+        if (imageCoverResult) imageCover = imageCoverResult;
+        if (tourImagesResults.length) tourImages = tourImagesResults;
+      }
+        const updatedItem=await Model.findByIdAndUpdate(req.params.id,{...req.body,imageCover,images:tourImages},{new:true});
         if(!updatedItem)return next(new ApiError(400,"Id Not Found!!"));
         res.status(200).send({
             status:"Success",
@@ -34,10 +52,12 @@ export const updateOne=(Model)=>{
 export const createOne=(Model)=>{
     return asyncHandler(async(req,res,next)=>
     {
-      // if(Model)
-      // {
-      //   console.log("Hi")
-      // }
+      if(req.body.files)
+      {
+        console.log('files',req.body.files);
+       const paths=req.body.files.map((file)=>file.path)
+      //  let urls=await uploadOnCloudinary(paths)
+      }
       if(req.body.createdBy)
       {
          let user_id=await getUserId(req.body.createdBy)

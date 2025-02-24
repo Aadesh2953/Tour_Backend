@@ -35,7 +35,7 @@ app.use(cors("*"))
 app.use('/api',limiter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
-app.use(express.static('pulic/static'))
+app.use(express.static('pulic/temp'))
 app.all("*", (req, res, next) => {
   next(
     new ApiError(
