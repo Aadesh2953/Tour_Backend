@@ -8,7 +8,7 @@ html(lang="en")
   body
     table.body(role="presentation", border="0", cellpadding="0", cellspacing="0")
       tr
-        td &amp;nbsp;
+        td 
         td.container
           .content
             // START CENTERED WHITE CONTAINER
@@ -18,19 +18,7 @@ html(lang="en")
               tr
             
                 td.wrapper
-                  p Hi there
-                  p Sometimes you just want to send a simple HTML email with a simple design and clear call to action. This is it.
-                  table.btn.btn-primary(role="presentation", border="0", cellpadding="0", cellspacing="0")
-                    tbody
-                      tr
-                        td(align="left")
-                          table(role="presentation", border="0", cellpadding="0", cellspacing="0")
-                            tbody
-                              tr
-                                td
-                                  a(href="http://htmlemail.io", target="_blank") Call To Action
-                  p This is a really simple email template. It&apos;s sole purpose is to get the recipient to click the button with no distractions.
-                  p Good luck! Hope it works.
+                  block content
               // END MAIN CONTENT AREA
             // START FOOTER
             .footer
@@ -48,4 +36,4 @@ html(lang="en")
                     a(href="http://htmlemail.io") HTMLemail.io
             // END FOOTER
             // END CENTERED WHITE CONTAINER
-        td &amp;nbsp;
+        td 
