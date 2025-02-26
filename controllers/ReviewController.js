@@ -5,6 +5,19 @@ import ApiError from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { deleteOne } from "../utils/factoryFunctions.js";
 
+// export const getMyReviews=asyncHandler(async(req,res,next)=>{
+//   const reviewQuery=Reviews.find({user:req.user.id});
+//   const query=req.query;
+//   if(query.sort) reviewQuery.sort(req.query.sort);
+//   if(query.page)
+//   {
+//     let limitRecords=query.limit
+//     let skip=parseInt(query.page-1)*limitRecords?limitRecords:5;
+//     reviewQuery.skip(skip).limit(limitRecords);
+//   }
+//   if(query.select)
+
+// })
 export const getReviews = asyncHandler(async (req, res, next) => {
   const reviews = Reviews.find();
   const queryString = { ...req.query };

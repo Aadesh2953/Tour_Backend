@@ -191,10 +191,14 @@ export const updateUser = asyncHandler(async (req, res, next) => {
   if (!user) {
     return next(new ApiError(404, "User Not Found!!!"));
   }
+  let url
+  if(req.file.path){
+    url=await uploadOnCloudinary(req.file.path)
+  }
   const body = filteredBody(req.body, "role");
   const updatedUser = await User.findByIdAndUpdate(
     req.user.id,
-    { ...body },
+    { ...body,photo:url},
     { new: true, runValidators: true }
   );
   res.status(200).json({
@@ -223,7 +227,6 @@ export const getLoggedInUser=asyncHandler(async(req,res,next)=>
   })
 })
 export const getMyTours=asyncHandler(async(req,res,next)=>{
-  console.log('here');
   const userId=req.user._id;
    let feature=new ApiFeature(Tour.find({createdBy:userId}),req.query);
    let MyTours =await feature.query;

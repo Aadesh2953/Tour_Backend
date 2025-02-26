@@ -1,3 +1,4 @@
+import { uploadOnCloudinary } from "../cloudinary/cloudinary.js";
 import { User } from "../models/UserModel.js";
 import ApiError from "./ApiError.js";
 import { asyncHandler } from "./AsyncHandler.js";
@@ -42,6 +43,11 @@ export const createOne=(Model)=>{
       {
          let user_id=await getUserId(req.body.createdBy)
          req.body={...req.body,createdBy:user_id}
+      }
+      let imageurls
+      if(Array.isArray(req.files))
+      {
+        imageurls=await uploadOnCloudinary(req.files); //pending  
       }
         const newData = await Model.create(req.body);
        
