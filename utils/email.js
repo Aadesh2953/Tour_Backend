@@ -1,10 +1,15 @@
 import nodemailer from 'nodemailer';
 import pug from 'pug';
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 export class Email{
   constructor(user,url)
   {
-     this.name=user.split(' ')[0];
+    console.log('user',user)
+     this.name=user.split;
      this.sendTo=user.email
      this.from=process.env.EMAIL
      this.url=url
@@ -15,7 +20,7 @@ export class Email{
         host:'smtp.gmail.com',
         port:587,
         secure:false,
-        servie:"gmail",
+        service:"gmail",
         auth:{
           user:process.env.EMAIL_USER,
           pass:process.env.EMAIL_PASSWORD,
@@ -24,7 +29,7 @@ export class Email{
   }
   async sendMail(template,subject)
   {
-    const html=pug.renderFile(`../views/${template}.pug`,{name:this.name,sendTo:this.sendTo,subject})
+    const html=pug.renderFile(path.join(__dirname, "../dev-data/templates/", `${template}.pug`),{name:this.name,sendTo:this.sendTo,subject})
     const mailOptions={
         from:process.env.EMAIL,
         to:this.sendTo,
