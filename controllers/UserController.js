@@ -5,6 +5,7 @@ import { sendEmail } from "../utils/email.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { filteredUser } from "../utils/filteredFiedls.js";
 import {deleteOne,updateOne,createOne,getOne,readAll} from '../utils/factoryFunctions.js'
+import { Email } from "../utils/email.js";
 import { Tour } from "../models/TourModel.js";
 import jwt from "jsonwebtoken";
 import ApiFeature from "../utils/FilteredQuery.js";
@@ -65,9 +66,10 @@ export const singInUser = asyncHandler(async (req, res, next) => {
 });
 
 export const signUpUser = asyncHandler(async (req, res, next) => {
-  
+  // console.log('files',req.file);
   const existingUser = await User.findOne({$or:[{ email: req.body.email },{name:req.body.name}]});
   if (existingUser) return next(new ApiError(401, "User Already Exists"));
+  let imageUrl;
   if(req.file)
   {
     imageUrl=await uploadOnCloudinary(req.file.path);
@@ -80,6 +82,7 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     confirmPassword: req.body.confirmPassword,
     photo:imageUrl
   });
+  await new Email(newUser, `${req.protocol}://${req.get('host')}/me`).sendWelcome();
   const token = getJWTToken(newUser._id);
   let options = {
     expiresIn: new Date(
@@ -207,7 +210,7 @@ export const updateUser = asyncHandler(async (req, res, next) => {
   });
 });
 export const deleteUser = asyncHandler(async (req, res, next) => {
-  let user = await User.findByIdAndUpdate(req.user.id, { active: false });
+  let user = await User.findByIdAndUpdate(req.params.id, { active: false });
   if (!user) {
     return next(new ApiError(401, "User Not Found!!!"));
   }
