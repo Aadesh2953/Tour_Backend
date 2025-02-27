@@ -1,7 +1,7 @@
 import { User } from "../models/UserModel.js";
 import ApiError from "../utils/ApiError.js";
 import crypto from "crypto";
-import { sendEmail } from "../utils/email.js";
+// import { sendEmail } from "../utils/email.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { filteredUser } from "../utils/filteredFiedls.js";
 import {deleteOne,updateOne,createOne,getOne,readAll} from '../utils/factoryFunctions.js'
@@ -100,20 +100,15 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
   });
 });
 export const forgotPassword = asyncHandler(async (req, res, next) => {
-  const userEmail = req.body.email;
-  const user = await User.findOne({ email: userEmail });
+  
+  const user = await User.findOne({ email: req.user.email });
   if (!user) {
     return next(new ApiError(404, "User Not Found With This Email!!"));
   }
   const generateToken = await user.createPasswordResetToken();
-  const resetUrl = `http://localhost:5173/forgotPassword/${generateToken}`;
-  const message = `Forgot Your Password? No worries Click on the link below to reset your password!! <br/> ${resetUrl}`;
-  const options = {
-    email: userEmail,
-    text: message,
-    subject: "Password Reset Token",
-  };
-  await sendEmail(options);
+  const resetUrl = `${req.protocol}://${req.get('host')}/forgotPassword/${generateToken}`;
+// const message = `Forgot Your Password? No worries Click on the link below to reset your password!! <br/> ${resetUrl}`;
+ await new Email(user,resetUrl).sendResetPassword(); 
   await user.save({ validateBeforeSave: false });
   res.status(200).json({
     message: "Token Sent to Email!!",
@@ -210,7 +205,7 @@ export const updateUser = asyncHandler(async (req, res, next) => {
   });
 });
 export const deleteUser = asyncHandler(async (req, res, next) => {
-  let user = await User.findByIdAndUpdate(req.params.id, { active: false });
+  let user = await User.deleteOne({email:'tp1234@yopmail.com'});
   if (!user) {
     return next(new ApiError(401, "User Not Found!!!"));
   }

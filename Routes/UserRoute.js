@@ -21,7 +21,7 @@ userRouter.route("/").get(verifyToken,getAllUsers);
 userRouter.route("/signup").post(upload.fields([{name:'photo'}])
 ,signUpUser);
 userRouter.route("/signin").post(singInUser);
-userRouter.route("/forgotPassword").post(forgotPassword)
+userRouter.route("/forgotPassword").post(verifyToken,forgotPassword)
 userRouter.route("/resetPassword/:token").patch(updatePassword)
 // userRouter.use(verifyToken);
 userRouter.route("/updateCurrentPassword").patch(verifyToken,updateExistingPassword)
