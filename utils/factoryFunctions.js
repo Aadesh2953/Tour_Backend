@@ -103,8 +103,8 @@ export const readAll=(Model)=>{
            .limitFeilds()
            .paginate();
          const data = await features.query;
-        //  console.log('query',req.query?.page*1*req.query?.limit*1);
-         const hasNext=data.length<req.query?.page*1*req.query?.limit*1?false:true;
+         const total=await Model.countDocuments();
+         let hasNext=total<=req.query?.limit*1*req.query.page*1?false:true
          if (data.length > 0) {
            res.status(201).json({
              status: "Success",
