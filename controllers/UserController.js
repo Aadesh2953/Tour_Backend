@@ -10,6 +10,7 @@ import { Tour } from "../models/TourModel.js";
 import jwt from "jsonwebtoken";
 import ApiFeature from "../utils/FilteredQuery.js";
 import { uploadOnCloudinary } from "../cloudinary/cloudinary.js";
+import { Bookings } from "../models/BookingModel.js";
 const filteredBody = (body, key) => {
   for (let elements in body) {
     if (elements[key]) delete elements[key];
@@ -32,7 +33,7 @@ export const getJWTToken = (id) => {
 };
 export const singInUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
-
+  // console.log(process.env.STRIPE_SECRET_KEY);
   if (!email  || !password) {
     return next(new ApiError(404, "Please enter a valid Email or Password"));
   }
@@ -82,7 +83,7 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     confirmPassword: req.body.confirmPassword,
     photo:imageUrl
   });
-  await new Email(newUser, `${req.protocol}://${req.get('host')}/me`).sendWelcome();
+   Promise.all([new Email(newUser, `${req.protocol}://${req.get('host')}/me`).sendWelcome()]);
   const token = getJWTToken(newUser._id);
   let options = {
     expiresIn: new Date(
@@ -161,6 +162,7 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
   });
 });
 export const updateExistingPassword = asyncHandler(async (req, res, next) => {
+  if(req.body.currentPassword==req.body.password)next(new ApiError(400,'Old and New Passwords are same!!'))
   const user = await User.findById(req.user?.id).select("+password");
   if (!user) return next(new ApiError(404, "user Not Found!!!"));
   if (!(await user.isPasswordCorrect(req.body?.currentPassword))) {
@@ -171,7 +173,8 @@ export const updateExistingPassword = asyncHandler(async (req, res, next) => {
   const newToken = getJWTToken(user._id);
   await user.save({ validateBeforeSave: false });
   res.status(200).json({
-    data: user,
+    success:true,
+     user,
     newToken,
   });
 });
@@ -190,10 +193,12 @@ export const updateUser = asyncHandler(async (req, res, next) => {
     return next(new ApiError(404, "User Not Found!!!"));
   }
   let url
-  if(req.file.path){
+  if(req.file && req.file.path){
     url=await uploadOnCloudinary(req.file.path)
   }
+  // console.log('url')
   const body = filteredBody(req.body, "role");
+  // console.log('body',body);
   const updatedUser = await User.findByIdAndUpdate(
     req.user.id,
     { ...body,photo:url},
@@ -237,4 +242,20 @@ export const getMyTours=asyncHandler(async(req,res,next)=>{
     status:"success"
    })
    
+})
+export const getMyBookings=asyncHandler(async(req,res,next)=>{
+  const myBookings=await Bookings.find({user:req.user.id});
+  if(myBookings.length==0)
+  {
+    res.status(200).send({
+      success:true,
+      message:"No Bookings to Display Here Book a tour Now"
+    })
+  }
+  res.status(200).send({
+    items:myBookings.length,
+    success:true,
+    data:myBookings,
+  })
+  
 })

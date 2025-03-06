@@ -12,6 +12,7 @@ import {
   updateExistingPassword,
   getLoggedInUser,
   getMyTours,
+  getMyBookings,
 
 } from "../controllers/UserController.js";
 import { upload } from "../middlewares/multerMiddleWare.js";
@@ -30,4 +31,5 @@ userRouter.route("/deleteUser").patch(verifyToken,restrictTo('admin'),deleteUser
 // userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
 userRouter.route("/getUser").get(verifyToken,restrictTo('admin','user'),getLoggedInUser);
 userRouter.route("/myTours").get(verifyToken,getMyTours);
+userRouter.route("/myBookings").get(verifyToken,getMyBookings);
 export { userRouter };

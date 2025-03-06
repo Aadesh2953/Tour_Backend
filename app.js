@@ -9,6 +9,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import helmet from "helmet";
 import xss from 'xss-clean';
 import hpp from 'hpp';
+import { bookingRouter } from "./Routes/BookingRoute.js";
 const app = express();
 app.use(helmet());
 
@@ -35,6 +36,7 @@ app.use(cors("*"))
 app.use('/api',limiter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/bookings", bookingRouter);
 app.use(express.static('pulic/temp'))
 app.all("*", (req, res, next) => {
   next(
