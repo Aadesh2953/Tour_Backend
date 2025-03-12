@@ -102,13 +102,16 @@ export const readAll=(Model)=>{
            .sort()
            .limitFeilds()
            .paginate();
+           const total=await Model.countDocuments();
+         
          const data = await features.query;
-         const total=await Model.countDocuments();
+         
          let hasNext=total<=req.query?.limit*1*req.query.page*1?false:true
          if (data.length > 0) {
            res.status(201).json({
              status: "Success",
              items: data.length,
+             total,
              data:[...data],
              hasNext
            });

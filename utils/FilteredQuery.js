@@ -17,9 +17,10 @@ export default class ApiFeature {
       const sortBy = this.queryString.sort.split(",").join(" ");
       this.query = this.query.sort(sortBy);
     }
-    else{
-      this.query = this.query.sort("-ratingAverage");
-    }
+    // else{
+    //   if()
+    //   this.query = this.query.sort("-ratingAverage");
+    // }
     return this;
   }
   limitFeilds() {
@@ -32,11 +33,11 @@ export default class ApiFeature {
     return this;
   }
   paginate() {
-    const page = this.queryString.page || 1;
-    const limit = this.queryString.limit || 100;
-    const skip = (page - 1) * limit;
-    // console.log('limit',this.query)
-    this.query = this.query.skip(skip).limit(limit);
+    let page = parseInt(this.queryString.page) || 1;
+    let limit = parseInt(this.queryString.limit) || 100;
+    let skip=(page-1)*limit
+    this.query = this.query.clone().skip(skip).limit(limit);
+    // console.log('query',this.query);
     // console.log('query',this.query);
     // console.log(req);
     return this;
