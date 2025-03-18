@@ -11,15 +11,9 @@ cloudinary.config({
        .upload(
         filePath
        )
-       .catch((error) => {yy
+       .catch((error) => {
            console.log(error);
        });
-       return uploadResult.url;
-    // Optimize delivery by resizing and applying auto-format and auto-quality
-    
-    
-    
-    
-    // Transform the image: auto-crop to square aspect_ratio    
+       return uploadResult.url;  
 }
 export {uploadOnCloudinary};

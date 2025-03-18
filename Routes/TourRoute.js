@@ -13,7 +13,7 @@ tourRouter.route("/tours-within/distance/:distance/latlng/:latlng/unit/:unit").g
 tourRouter
 .route("/")
 .get(getTours)
-.post(verifyToken,upload.fields({name:"imageCover",maxCount:1},{name:"tourImages",maxCount:3}),addTour);
+.post(upload.fields([{name:"imageCover",maxCount:1},{name:"images",maxCount:3}]),addTour);
 tourRouter.use(verifyToken);
 tourRouter
   .route("/:id")

@@ -60,6 +60,7 @@ export const singInUser = asyncHandler(async (req, res, next) => {
   };
   res.cookie("jwt", token, options);
   res.status(201).json({
+    success:true,
     message: "Success",
     token,
     user,
