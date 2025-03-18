@@ -3,8 +3,8 @@ import { User } from "../models/UserModel.js";
 import ApiError from "./ApiError.js";
 import { asyncHandler } from "./AsyncHandler.js";
 import ApiFeature from "./FilteredQuery.js";
-const getUserId = async (email) => {
-  const user = await User.findOne({ email });
+const getUserId = async (id) => {
+  const user = await User.findById(id);
   return user._id;
 };
 export const deleteOne = (Model) => {
@@ -92,6 +92,7 @@ export const createOne = (Model) => {
     const newData = await Model.create(req.body);
 
     res.status(201).json({
+      success:true,
       status: "Success",
       data: {
         tour: newData,

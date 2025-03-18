@@ -238,7 +238,7 @@ export const getMyTours=asyncHandler(async(req,res,next)=>{
    if(req.query?.page) hasNext=MyTours.length<req.query?.page*1*req.query?.limit*1?false:true;
    res.status(200).send({
     success:true,
-    data:MyTours,
+    MyTours,
     hasNext,
     status:"success"
    })
