@@ -26,7 +26,7 @@ async function importDevData() {
     await Tour.create(tourData);
     await Reviews.create(reviewData);
     await User.create(userData);
-    console.log("Data imported successfully!");
+    // console.log("Data imported successfully!");
   } catch (err) {
     console.error("Error importing data:", err);
   }
@@ -37,7 +37,7 @@ async function deleteDevData() {
     await Tour.deleteMany();
     await Reviews.deleteMany();
     await User.deleteMany();
-    console.log("Data deleted successfully!");
+    // console.log("Data deleted successfully!");
   } catch (err) {
     console.error("Error deleting data:", err);
   }

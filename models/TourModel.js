@@ -144,7 +144,7 @@ TourSchema.virtual("weekDuration").get(function()
 })
 TourSchema.pre("save",function(next)
 {
-    console.log('beforeSAVE')
+    // console.log('beforeSAVE')
     this.slug=slugify(this.name,{lower:true})
     next()
 })

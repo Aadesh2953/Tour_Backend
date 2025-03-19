@@ -88,7 +88,7 @@ export const createOne = (Model) => {
    imageUrls = await Promise.all(imageUrls);
    req.body={...req.body,images:imageUrls};
  }
-    console.log('here');
+    // console.log('here');
     const newData = await Model.create(req.body);
 
     res.status(201).json({

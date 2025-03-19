@@ -4,7 +4,7 @@ import { connectToDb } from './db/index.js';
 dotenv.config({ path: './config.env' });
 connectToDb().then(()=>{
   app.listen(process.env.port||5000,() => {
-    console.log(`App listening on http://localhost:3000`);
+    // console.log(`App listening on http://localhost:3000`);
   });
 }).catch((err)=>
 {

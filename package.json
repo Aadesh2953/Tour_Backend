@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js",
-    "prod": "nodemon server.js",
+    "dev": "node server.js",
+    "prod": "node server.js",
     "debug": "ndb server.js"
   },
   "type": "module",
@@ -16,6 +16,7 @@
     "@sendgrid/mail": "^8.1.4",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
+    "compression": "^1.8.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",

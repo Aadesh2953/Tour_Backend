@@ -10,6 +10,7 @@ import helmet from "helmet";
 import xss from 'xss-clean';
 import hpp from 'hpp';
 import { bookingRouter } from "./Routes/BookingRoute.js";
+import compression from "compression";
 const app = express();
 app.use(helmet());
 
@@ -32,6 +33,7 @@ app.use(hpp({whitelist:[
   'RatingsAverage',
   'maxGroupSize'
 ]}))
+app.use(compression())
 app.use(cors("*"))
 app.use('/api',limiter);
 app.use("/api/v1/tours", tourRouter);
