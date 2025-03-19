@@ -34,7 +34,6 @@ app.use(hpp({whitelist:[
   'maxGroupSize'
 ]}))
 app.use(compression())
-app.use(cors("*"))
 app.use('/api',limiter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
