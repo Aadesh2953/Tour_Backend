@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import ApiError from '../utils/ApiError.js'
 import Stripe from "stripe";
 import { Bookings } from "../models/BookingModel.js";
+import { User } from "../models/UserModel.js";
 export const getBooking = asyncHandler(async (req, res, next) => {
     const tour=await Tour.findById(req.params.id);
     if(!tour)
@@ -16,7 +17,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
         cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
         customer_email: req.user.email,
         client_reference_id: req.params.id,
-        line_items: [
+        order_items: [
             {
                 price_data: {
                     currency: 'usd',
@@ -38,19 +39,41 @@ export const getBooking = asyncHandler(async (req, res, next) => {
         data:session
     })
 })
-export const createBooking=asyncHandler(async(req,res,next)=>{
-    let {tour,user,price}=req.query;
+export const createBooking=async (session)=>{
+    const tour=session.client_reference_id;
+    const user=await User.findOne({email:session.customer_email});
+    const price=session.order_items[0].unit_amount/100;
+    await Bookings.create({tour,user,price});
+}
 
-    if(!tour || !user ||! price) next(new ApiError(500,'Invalid Booking'))
-    const booking=await Bookings.create({
-     tour,
-     user,
-     price
-})
-res.status(200).send({
-    success:true,
-    data:booking
-})
+//     let {tour,user,price}=req.query;
+
+//     if(!tour || !user ||! price) next(new ApiError(500,'Invalid Booking'))
+//     const booking=await Bookings.create({
+//      tour,
+//      user,
+//      price
+// })
+// res.status(200).send({
+//     success:true,
+//     data:booking
+// })
+
+export const webHookController=asyncHandler(async (req,res,next)=>{
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    let  stripeSignature=req.headers['stripe-signature'];
+    let event;
+    try {
+        event=stripe.webHooks.constructEvent(
+            req.body,
+            stripeSignature,
+            process.env.STRIPE_SIGNING_SECRET
+        )
+    } catch (error) {
+        return res.status(500).send('webHook Error')
+    }
+    if(event==='checkout.session.complete')createBooking(event.data.object)
+    // res.status(400).send('')
 })
 export const getAllBookings=asyncHandler(async(req,res,next)=>{
     
