@@ -64,7 +64,7 @@ export const webHookController=asyncHandler(async (req,res,next)=>{
             process.env.STRIPE_SIGNING_SECRET
         )
     } catch (error) {
-        return res.status(500).send('webHook Error')
+        return res.status(500).send('webHook Error',error)
     }
     if(event==='checkout.session.completed')createBooking(event.data.object)
     // res.status(400).send('')
