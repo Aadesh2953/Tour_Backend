@@ -13,7 +13,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
  const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        success_url: `${req.protocol}://${req.get('host')}/?${req.params.id}&${req.user.id}&${tour.price}`,
+        success_url: `http://localhost:5173/myTours`,
         cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
         customer_email: req.user.email,
         client_reference_id: req.params.id,
@@ -35,7 +35,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
     });
     
     res.status(200).send({
-        status:"Success",
+        success:true,
         data:session
     })
 })
@@ -44,22 +44,16 @@ export const createBooking=async (session)=>{
     const user=await User.findOne({email:session.customer_email});
     const price=session.order_items[0].unit_amount/100;
     await Bookings.create({tour,user,price});
+
+res.status(200).send({
+    success:true,
+    tour
+})
+
 }
 
-//     let {tour,user,price}=req.query;
-
-//     if(!tour || !user ||! price) next(new ApiError(500,'Invalid Booking'))
-//     const booking=await Bookings.create({
-//      tour,
-//      user,
-//      price
-// })
-// res.status(200).send({
-//     success:true,
-//     data:booking
-// })
-
 export const webHookController=asyncHandler(async (req,res,next)=>{
+    console.log('controller')
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     let  stripeSignature=req.headers['stripe-signature'];
     let event;
@@ -72,19 +66,21 @@ export const webHookController=asyncHandler(async (req,res,next)=>{
     } catch (error) {
         return res.status(500).send('webHook Error')
     }
-    if(event==='checkout.session.complete')createBooking(event.data.object)
+    if(event==='checkout.session.completed')createBooking(event.data.object)
     // res.status(400).send('')
 })
+
 export const getAllBookings=asyncHandler(async(req,res,next)=>{
-    
-    const bookings=await Bookings.find({createdBy:req.user.id});
-    if(bookings.length==0)res.status(200).send({
+      const bookings=await Bookings.find({user:req.user.id});
+    if(bookings.length==0){res.status(200).send({
         success:true,
         items:bookings.length,
         message:'No Bookings found !',
         data:bookings
     })
-    res.status(200).send({
+return 
+}
+     res.status(200).send({
         success:true,
         items:bookings.length,
         message:'Success',
@@ -100,5 +96,4 @@ export const cancelBooking=asyncHandler(async(req,res,next)=>{
     message:"Booking Canceled Successfully",
     data:canceledBooking
  })
-    
 })

@@ -113,7 +113,7 @@ export const getOne = (Model, populateOptions) => {
     //  c
     // console.log('review',isReviewSubmitted)
     data = { ...data, isReviewSubmitted: isReviewSubmitted };
-    console.log("data", data);
+
     res.status(201).json({
       status: "Success",
       data,
