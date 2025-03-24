@@ -54,14 +54,14 @@ res.status(200).send({
 
 export const webHookController=asyncHandler(async (req,res,next)=>{
     
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe('sk_test_51Qwz9VP1unchdmuJWrs83vyVs9J11dYM24YovDYVdgnPQ6ZCmoXxFieKI2iUPPSSTeuphT4cvJNtdBzsugcKpxuA00oTzHiB9C');
     let  stripeSignature=req.headers['stripe-signature'];
     let event;
     try {
         event=stripe.webhooks.constructEvent(
             req.body,
             stripeSignature,
-            process.env.STRIPE_SIGNING_SECRET
+            'whsec_66BAlg9kfDdrnSZiOodoGDWL2Ps3JIZ0'
         )
     } catch (error) {
         return res.status(500).send(
