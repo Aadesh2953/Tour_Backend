@@ -54,19 +54,21 @@ res.status(200).send({
 
 export const webHookController=asyncHandler(async (req,res,next)=>{
     console.log('controller')
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe("sk_test_51Qwz9VP1unchdmuJWrs83vyVs9J11dYM24YovDYVdgnPQ6ZCmoXxFieKI2iUPPSSTeuphT4cvJNtdBzsugcKpxuA00oTzHiB9C");
+    // console.log('stripe',stripe);
     let  stripeSignature=req.headers['stripe-signature'];
     let event;
     try {
-        event=stripe.webHooks.constructEvent(
+        event=stripe.webhooks.constructEvent(
             req.body,
             stripeSignature,
-            process.env.STRIPE_SIGNING_SECRET
+            'whsec_66BAlg9kfDdrnSZiOodoGDWL2Ps3JIZ0'
         )
     } catch (error) {
-        return res.status(500).send('webHook Error')
+        console.log('error',error);
+        return res.status(500).send(`${error}`)
     }
-    if(event==='checkout.session.completed')createBooking(event.data.object)
+    if(event.type==='checkout.session.completed')createBooking(event.data.object)
     // res.status(400).send('')
 })
 
