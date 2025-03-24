@@ -10,6 +10,7 @@ import helmet from "helmet";
 import xss from 'xss-clean';
 import hpp from 'hpp';
 import { bookingRouter } from "./Routes/BookingRoute.js";
+import { webHookController } from "./controllers/BookingController.js";
 const app = express();
 app.use(helmet());
 
@@ -19,6 +20,7 @@ app.get('/',(req,res,next)=>{
   res.status(200).render('base');
    // next()
  })
+ app.use('/webhook-checkout',express.raw(),webHookController);
 app.use(express.json({ limit: "16kb" }));
 app.use(mongoSanitize());
 app.use(xss());
