@@ -58,13 +58,15 @@ export const webHookController=asyncHandler(async (req,res,next)=>{
     let  stripeSignature=req.headers['stripe-signature'];
     let event;
     try {
-        event=stripe.webHooks.constructEvent(
+        event=stripe.webhooks.constructEvent(
             req.body,
             stripeSignature,
             process.env.STRIPE_SIGNING_SECRET
         )
     } catch (error) {
-        return res.status(500).send('webHook Error',error)
+        return res.status(500).send(
+            `${error}`
+        )
     }
     if(event.type==='checkout.session.completed')createBooking(event.data.object)
     // res.status(400).send('')
