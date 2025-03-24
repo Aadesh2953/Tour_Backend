@@ -66,7 +66,7 @@ export const webHookController=asyncHandler(async (req,res,next)=>{
     } catch (error) {
         return res.status(500).send('webHook Error',error)
     }
-    if(event==='checkout.session.completed')createBooking(event.data.object)
+    if(event.type==='checkout.session.completed')createBooking(event.data.object)
     // res.status(400).send('')
 })
 
