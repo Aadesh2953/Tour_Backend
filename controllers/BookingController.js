@@ -53,7 +53,7 @@ res.status(200).send({
 }
 
 export const webHookController=asyncHandler(async (req,res,next)=>{
-    console.log('controller')
+    
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     let  stripeSignature=req.headers['stripe-signature'];
     let event;
