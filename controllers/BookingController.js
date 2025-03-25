@@ -72,10 +72,10 @@ export const webHookController=asyncHandler(async (req,res,next)=>{
     if(event.type==='checkout.session.completed')
     {
         await createBooking(event.data.object)
-        res.status(200).send({data:event.data.object});
+        // res.status(200).send({data:event.data.object});
     }
     // res.status(400).send('')
-    res.status(200).json({ success: true, message: "Webhook processed" });
+    res.status(200).json({ success: true, message: "Webhook processed",data:event.data.object });
 })
 
 export const getAllBookings=asyncHandler(async(req,res,next)=>{
