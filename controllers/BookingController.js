@@ -42,7 +42,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
 export const createBooking=async (session)=>{
     const tour=session.client_reference_id;
     const user=await User.findOne({email:session.customer_email});
-    const price=session.order_items[0].unit_amount/100;
+    const price=session.line_items[0].unit_amount/100;
     await Bookings.create({tour,user,price});
 
 res.status(200).send({
