@@ -232,7 +232,7 @@ export const getLoggedInUser=asyncHandler(async(req,res,next)=>
 })
 export const getMyTours=asyncHandler(async(req,res,next)=>{
   const userId=req.user._id;
-   let feature=new ApiFeature(Tour.find({createdBy:userId}),req.query);
+   let feature=new ApiFeature(Tour.find({user:userId}),req.query);
    let MyTours =await feature.query;
    let hasNext=false
    if(req.query?.page) hasNext=MyTours.length<req.query?.page*1*req.query?.limit*1?false:true;
