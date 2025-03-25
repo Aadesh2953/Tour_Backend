@@ -45,11 +45,7 @@ export const createBooking=async (session)=>{
     const price=100;
     // const price=session.line_items[0].price_data.unit_amount/100;
     await Bookings.create({tour,user,price});
-
-res.status(200).send({
-    success:true,
-    tour
-})
+return
 
 }
 
