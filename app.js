@@ -21,7 +21,7 @@ app.get('/',(req,res,next)=>{
   res.status(200).render('base');
    // next()
  })
-app.post('/webhook-checkout',express.raw({ type: 'application/json' }),webHookController);
+ app.post("/webhook-checkout", express.raw({ type: "application/json" }), webHookController);
 app.use(express.json({ limit: "16kb" }));
 app.use(mongoSanitize());
 app.use(xss());
