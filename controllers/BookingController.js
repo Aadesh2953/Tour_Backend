@@ -75,7 +75,7 @@ export const webHookController=asyncHandler(async (req,res,next)=>{
 })
 
 export const getAllBookings=asyncHandler(async(req,res,next)=>{
-      const bookings=await Bookings.find({user:req.user.id});
+      const bookings=await Bookings.find({user:req.user.id}).populate('tour');
     if(bookings.length==0){res.status(200).send({
         success:true,
         items:bookings.length,
