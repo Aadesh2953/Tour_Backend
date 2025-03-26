@@ -245,7 +245,8 @@ export const getMyTours=asyncHandler(async(req,res,next)=>{
    
 })
 export const getMyBookings=asyncHandler(async(req,res,next)=>{
-  const myBookings=await Bookings.find({user:req.user.id});
+  const query=new ApiFeature(req.query);
+  const myBookings=await Bookings.find({createdBy:req.user.id});
   if(myBookings.length==0)
   {
     res.status(200).send({

@@ -129,6 +129,7 @@ export const readAll = (Model) => {
       .paginate();
     const total = await Model.countDocuments();
 
+
     const data = await features.query;
 
     let hasNext =

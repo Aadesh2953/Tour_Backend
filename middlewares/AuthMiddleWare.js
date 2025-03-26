@@ -13,8 +13,7 @@ export const verifyToken=asyncHandler(async(req,res,next)=>
         {
          return next(new ApiError(401,'Pls login to Access This Route!!!'));
         }
-     const decodedToken= jwt.verify(reqToken,process.env.JWT_SECRET);
-    
+     const decodedToken= jwt.verify(reqToken,process.env.JWT_SECRET)
      if(!decodedToken)
     {
         return next(new ApiError(401,'Token not Found'))
