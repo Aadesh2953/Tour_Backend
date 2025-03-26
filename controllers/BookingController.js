@@ -103,7 +103,7 @@ export const getAllBookings = asyncHandler(async (req, res, next) => {
     success: true,
     items,
     data: bookings,
-    hasNext
+    hasNext:hasNext
   });
 });
 export const cancelBooking = asyncHandler(async (req, res, next) => {
