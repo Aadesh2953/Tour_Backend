@@ -5,7 +5,6 @@ import Stripe from "stripe";
 import { Bookings } from "../models/BookingModel.js";
 import { User } from "../models/UserModel.js";
 import ApiFeature from "../utils/FilteredQuery.js";
-import Booking from "../../../Udemy/complete-node-bootcamp/4-natours/after-section-14/models/bookingModel.js";
 export const getBooking = asyncHandler(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id);
   if (!tour) {
