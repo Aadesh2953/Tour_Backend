@@ -37,9 +37,6 @@ export default class ApiFeature {
     let limit = parseInt(this.queryString.limit) || 100;
     let skip=(page-1)*limit
     this.query = this.query.clone().skip(skip).limit(limit);
-    // console.log('query',this.query);
-    // console.log('query',this.query);
-    // console.log(req);
     return this;
   }
 }

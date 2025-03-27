@@ -160,7 +160,12 @@ TourSchema.pre('save',async function(next)
 })
 TourSchema.pre("aggregate",function(next)
 {
-    this.pipeline().unshift({$match:{secretTour:{$ne:true}}})
+    this.pipeline().unshift({$match:{secretTour:{$ne:true}}})   
     next()
 })
+// TourSchema.virtual('bookings',{
+//     foreignField:'tour',
+//     localField:'_id',
+//     ref:'Bookings'
+// })
 export const Tour=new mongoose.model('Tour',TourSchema)

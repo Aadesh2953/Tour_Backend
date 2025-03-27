@@ -27,6 +27,15 @@ const bookingSchema=new mongoose.Schema({
     active:{
         type:Boolean,
         default:true
+    },
+    status:{
+        type:String,
+        enum:['Completed','Upcoming','Cancelled'],
+        default:'Upcoming'
+    },
+    selectedDate:{
+        type:Date,
+        default:Date.now()
     }
 })
 bookingSchema.pre('save',async function(next)

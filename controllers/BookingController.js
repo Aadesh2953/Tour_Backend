@@ -78,7 +78,7 @@ export const webHookController = asyncHandler(async (req, res, next) => {
 
 export const getAllBookings = asyncHandler(async (req, res, next) => {
   const features = new ApiFeature(
-    Bookings.find({ user: req.user.id }),
+    Bookings.find({ user: req.user.id ,status:req.query.status}),
     req.query
   )
   .filter()
@@ -86,7 +86,8 @@ export const getAllBookings = asyncHandler(async (req, res, next) => {
   .limitFeilds()
   .paginate();
   const items = await Bookings.countDocuments();
-  const bookings = await features.query.populate('tour');
+  const options=req.query.status?''
+  const bookings = await features.query.populate();
   let hasNext =
   items <= req.query?.limit * 1 * req.query.page * 1 ? false : true;
   if (bookings.length == 0) {
@@ -110,7 +111,7 @@ export const cancelBooking = asyncHandler(async (req, res, next) => {
   if (!req.params.id)
     next(new ApiError(400, "Booking with Given Id is Not Found!!"));
   const canceledBooking = await Bookings.findByIdAndUpdate(req.params.id, {
-    $set: { active: false },
+    $set: { status: 'Cancelled' },
   });
   if (!canceledBooking)
     next(new ApiError(400, "Booking Cancelation Request Failed "));

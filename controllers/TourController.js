@@ -131,3 +131,6 @@ export const getNearestTours=asyncHandler(async(req,res,next)=>
     data:nearestTours
   })
 })
+// export const getMostBookedTours=asyncHandler(async(req,res,next)=>{
+  
+// })
