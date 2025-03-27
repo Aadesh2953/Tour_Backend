@@ -86,7 +86,7 @@ export const getAllBookings = asyncHandler(async (req, res, next) => {
   .limitFeilds()
   .paginate();
   const items = await Bookings.countDocuments();
-  const options=req.query.status?''
+  // const options=req.query.status?'':{path:'tours',select:'name'}
   const bookings = await features.query.populate();
   let hasNext =
   items <= req.query?.limit * 1 * req.query.page * 1 ? false : true;
