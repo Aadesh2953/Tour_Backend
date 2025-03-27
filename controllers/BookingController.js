@@ -39,12 +39,12 @@ export const getBooking = asyncHandler(async (req, res, next) => {
     data: session,
   });
 });
-export const createBooking = async (session) => {
+export const createBooking = async (session,req) => {
   const tour = session.client_reference_id;
   const user = await User.findOne({ email: session.customer_email });
-  const price = 100;
+  const price = session.amount_total;
   // const price=session.line_items[0].price_data.unit_amount/100;
-  await Bookings.create({ tour, user, price });
+  await Bookings.create({ tour, user, price,selectedDate:req.selectedDate });
   return;
 };
 
@@ -62,7 +62,7 @@ export const webHookController = asyncHandler(async (req, res, next) => {
     res.status(500).send(`${error}`);
   }
   if (event.type === "checkout.session.completed") {
-    await createBooking(event.data.object);
+    await createBooking(event.data.object,req);
     // res.status(200).send({data:event.data.object});
   }
   // res.status(400).send('')
