@@ -51,7 +51,8 @@ export const createBooking = async (session,req) => {
   const tour = session.client_reference_id;
   const user = await User.findOne({ email: session.customer_email });
   const price = session.amount_total;
-  console.log('session',session);
+  console.log('session',session.metadata.selectedDate);
+  console.log('session',session.metadata);
   let selectedDate = JSON.parse(session.metadata.selectedDate);
   const response=await Bookings.create({ tour, user, price,selectedDate:selectedDate });
   return;
@@ -88,7 +89,6 @@ export const webHookController = asyncHandler(async (req, res, next) => {
       success: true,
       message: "Webhook processed",
       data: event.data.object,
-      response:response
     });
 });
 
