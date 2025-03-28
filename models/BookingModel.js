@@ -41,7 +41,7 @@ const bookingSchema=new mongoose.Schema({
 })
 bookingSchema.pre('save',async function(next)
 {
-    console.log('selectedDate',this.selectedDate);
+    console.log('save selectedDate',this.selectedDate);
     let tour=await Tour.findById(this.tour).lean();
     this.createdBy=tour.createdBy;
     next();
