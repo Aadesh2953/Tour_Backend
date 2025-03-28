@@ -39,4 +39,12 @@ export default class ApiFeature {
     this.query = this.query.clone().skip(skip).limit(limit);
     return this;
   }
+  getStatus()
+  {
+    if(this.queryString.status)
+    {
+      this.query=this.query.find({status:this.queryString.status})
+    }
+    return this;
+  }
 }

@@ -35,11 +35,13 @@ const bookingSchema=new mongoose.Schema({
     },
     selectedDate:{
         type:Date,
-        default:Date.now()
+        required:[true,'Please select a date']
+        
     }
 })
 bookingSchema.pre('save',async function(next)
 {
+    console.log('selectedDate',this.selectedDate);
     let tour=await Tour.findById(this.tour).lean();
     this.createdBy=tour.createdBy;
     next();
