@@ -53,8 +53,8 @@ export const createBooking = async (session,req) => {
   const price = session.amount_total;
   console.log('session',session.metadata.selectedDate);
   console.log('session',session.metadata);
-  let selectedDate = JSON.parse(session.metadata.selectedDate);
-  const response=await Bookings.create({ tour, user, price,selectedDate:selectedDate });
+  let date = new Date(session.metadata.selectedDate);
+  const response=await Bookings.create({ tour, user, price,selectedDate:date });
   return;
 };
 
