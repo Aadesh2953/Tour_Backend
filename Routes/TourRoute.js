@@ -18,7 +18,7 @@ tourRouter.use(verifyToken);
 tourRouter
   .route("/:id")
   .post(getTourById)
-  .patch(restrictTo('admin','lead-guide'),upload.fields([{name:'imageCover',maxCount:1},{name:'tourImages',maxCount:3}]),updateTourById)
+  .patch(upload.fields([{name:'imageCover',maxCount:1},{name:'tourImages',maxCount:3}]),updateTourById)
   .delete(deleteTourById);
 tourRouter.route("/nearest-tours/:latlng/unit/:unit").get(getNearestTours);
 export {tourRouter}

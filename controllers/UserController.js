@@ -84,7 +84,7 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     confirmPassword: req.body.confirmPassword,
     photo:imageUrl
   });
-   Promise.all([new Email(newUser, `${req.protocol}://${req.get('host')}/me`).sendWelcome()]);
+  //  Promise.all([new Email(newUser, `${req.protocol}://${req.get('host')}/me`).sendWelcome()]);
   const token = getJWTToken(newUser._id);
   let options = {
     expiresIn: new Date(
