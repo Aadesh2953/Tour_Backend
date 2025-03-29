@@ -51,7 +51,7 @@ export const createBooking = async (session,id) => {
  try{ const tour = session.client_reference_id;
   const user = await User.findOne({ email: session.customer_email });
   const price = session.amount_total;
-  console.log('session',session);
+
   let response
   let selectedDate = new Date(session.metadata.selectedDate);
   console.log('selectedDate',selectedDate);
