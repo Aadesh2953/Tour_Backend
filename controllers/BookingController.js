@@ -47,7 +47,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
     data: session,
   });
 });
-export const createBooking = async (session,id) => {
+export const createBooking = async (session) => {
  try{ const tour = session.client_reference_id;
   const user = await User.findOne({ email: session.customer_email });
   const price = session.amount_total;
@@ -55,7 +55,7 @@ export const createBooking = async (session,id) => {
   let response
   let selectedDate = new Date(session.metadata.selectedDate);
   console.log('selectedDate',selectedDate);
-   response=await Bookings.create({ tour, user, price,selectedDate ,paymentId:id});
+   response=await Bookings.create({ tour, user, price,selectedDate ,paymentId:session.payment_intent});
   return response;
 }
 catch(err){
@@ -84,7 +84,7 @@ export const webHookController = asyncHandler(async (req, res, next) => {
   // ;
   let response
   if (event.type === "checkout.session.completed") {
-    response=await createBooking(session,event.id);
+    response=await createBooking(session);
     // res.status(200).send({data:event.data.object});
   }
   // res.status(400).send('')
@@ -149,9 +149,9 @@ export const getBookingDetails=asyncHandler(async(req,res,next)=>
     return next(new ApiError(404,"Booking Not Found!!"))
   }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const paymentMethod = await stripe.paymentMethods.retrieve(
-    bookingDetails.paymentId,
-  );
+  const paymentMethod = await stripe.paymentIntents.retrieve(paymentIntentId, {
+    expand: ["payment_method"] // Expands and includes full Payment Method details
+});
   res.status(200).send({
     success:true,
     data:bookingDetails,
