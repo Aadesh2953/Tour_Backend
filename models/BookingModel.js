@@ -37,6 +37,10 @@ const bookingSchema=new mongoose.Schema({
         type:Date,
         required:[true,'Please select a date']
         
+    },
+    paymentId:{
+        type:String,
+        required:true
     }
 })
 bookingSchema.pre('save',async function(next)

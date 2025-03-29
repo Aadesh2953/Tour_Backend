@@ -47,15 +47,22 @@ export const getBooking = asyncHandler(async (req, res, next) => {
     data: session,
   });
 });
-export const createBooking = async (session,req) => {
-  const tour = session.client_reference_id;
+export const createBooking = async (session,id) => {
+ try{ const tour = session.client_reference_id;
   const user = await User.findOne({ email: session.customer_email });
   const price = session.amount_total;
   console.log('session',session);
-  let selectedDate = JSON.parse(session.metadata.selectedDate);
-  const response=await Bookings.create({ tour, user, price,selectedDate:selectedDate });
-  return;
-};
+  let response
+  let selectedDate = new Date(session.metadata.selectedDate);
+  console.log('selectedDate',selectedDate);
+   response=await Bookings.create({ tour, user, price,selectedDate ,paymentId:id});
+  return response;
+}
+catch(err){
+  console.log('err',err);
+  return err;
+}
+}
 
 export const webHookController = asyncHandler(async (req, res, next) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -77,18 +84,15 @@ export const webHookController = asyncHandler(async (req, res, next) => {
   // ;
   let response
   if (event.type === "checkout.session.completed") {
-    response=await createBooking(session,req);
+    response=await createBooking(session,event.data.id);
     // res.status(200).send({data:event.data.object});
   }
   // res.status(400).send('')
-   
-  res
-    .status(200)
-    .json({
+ console.log('res,',response);  
+  res.status(200).json({
       success: true,
       message: "Webhook processed",
       data: event.data.object,
-      response:response
     });
 });
 
@@ -100,10 +104,10 @@ export const getAllBookings = asyncHandler(async (req, res, next) => {
   .filter()
   .sort()
   .limitFeilds()
-  .paginate().getStatus();
-  const items = await Bookings.countDocuments();
+  .paginate()
+  const items = await Bookings.countDocuments({user: req.user.id});
   // const options=req.query.status?'':{path:'tours',select:'name'}
-  const bookings = await features.query.populate();
+  const bookings = await features.query.populate('tour');
   let hasNext =
   items <= req.query?.limit * 1 * req.query.page * 1 ? false : true;
   if (bookings.length == 0) {
@@ -137,3 +141,20 @@ export const cancelBooking = asyncHandler(async (req, res, next) => {
     data: canceledBooking,
   });
 });
+export const getBookingDetails=asyncHandler(async(req,res,next)=>
+{
+  let bookingDetails=await Bookings.findById(req.params.id).populate("tour");
+  if(!bookingDetails)
+  {
+    return next(new ApiError(404,"Booking Not Found!!"))
+  }
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const paymentMethod = await stripe.paymentMethods.retrieve(
+    bookingDetails.paymentId,
+  );
+  res.status(200).send({
+    success:true,
+    data:bookingDetails,
+    paymentMethod
+  })
+})
