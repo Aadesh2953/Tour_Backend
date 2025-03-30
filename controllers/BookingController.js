@@ -15,7 +15,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
-    success_url: `http://localhost:5173/myTours`,
+    success_url: `http://localhost:5173/my-bookings`,
     cancel_url: `${req.protocol}://${req.get("host")}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.id,
@@ -149,7 +149,7 @@ export const getBookingDetails=asyncHandler(async(req,res,next)=>
     return next(new ApiError(404,"Booking Not Found!!"))
   }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const paymentMethod = await stripe.paymentIntents.retrieve(paymentIntentId, {
+  const paymentMethod = await stripe.paymentIntents.retrieve(bookingDetails.paymentId, {
     expand: ["payment_method"] // Expands and includes full Payment Method details
 });
   res.status(200).send({
