@@ -181,20 +181,18 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
     },
     { $unwind: "$tour" },
     {
-      $project: {
-        "tour._id": 1,
-        "tour.name": 1,
-        "tour.price": 1,
-      },
-    },
-    {
       $group: {
         _id: "$tour._id",
         total: { $sum: 1 },
-        
+        tourName: { $first: "$tour.name" },
+        location:{$first:"$tour.startLocation.description"},
         earnings: { $sum: "$tour.price" },
       },
     },
+    {
+      $sort: { total: -1 },
+    },
+ 
     {
       $group: {
         _id: null,
@@ -202,9 +200,7 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
         tour: { $push: "$$ROOT" }
       },
     },
-    {
-      $sort: { total: -1 },
-    },
+    
     {
       $project: {
         _id: 0, // Exclude _id
