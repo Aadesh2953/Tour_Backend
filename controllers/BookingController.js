@@ -11,7 +11,6 @@ export const getBooking = asyncHandler(async (req, res, next) => {
   if (!tour) {
     return next(new ApiError(404, "Tour Not Found!!!"));
   }
-  // console.log('selectedDAte',req.body.selectedDate);
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -37,6 +36,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
     mode: "payment",
     metadata: {
       selectedDate: new Date(req.body.selectedDate).toISOString(),
+      persons:req.body.persons
     }, // Required field for checkout session
   });
 
@@ -53,17 +53,18 @@ export const createBooking = async (session) => {
 
     let response;
     let selectedDate = new Date(session.metadata.selectedDate);
-    console.log("selectedDate", selectedDate);
+
     response = await Bookings.create({
       tour,
       user,
       price,
       selectedDate,
       paymentId: session.payment_intent,
+      persons:session.metadata.persons
     });
     return response;
   } catch (err) {
-    console.log("err", err);
+      console.log("err", err);
     return err;
   }
 };
@@ -92,7 +93,6 @@ export const webHookController = asyncHandler(async (req, res, next) => {
     // res.status(200).send({data:event.data.object});
   }
   // res.status(400).send('')
-  console.log("res,", response);
   res.status(200).json({
     success: true,
     message: "Webhook processed",
@@ -156,7 +156,7 @@ export const getBookingDetails = asyncHandler(async (req, res, next) => {
     return next(new ApiError(404, "Booking Not Found!!"));
   }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  console.log("payment", bookingDetails);
+  
   const paymentMethod = await stripe.paymentIntents.retrieve(
     bookingDetails.paymentId,
     {
@@ -170,7 +170,7 @@ export const getBookingDetails = asyncHandler(async (req, res, next) => {
   });
 });
 export const getAnalytics = asyncHandler(async (req, res, next) => {
-  const analytics = await Bookings.aggregate([
+  const analytics = Bookings.aggregate([
     {
       $lookup: {
         from: "tours",
@@ -185,7 +185,7 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
         _id: "$tour._id",
         total: { $sum: 1 },
         tourName: { $first: "$tour.name" },
-        location:{$first:"$tour.startLocation.description"},
+        location: { $first: "$tour.startLocation.description" },
         earnings: { $sum: "$tour.price" },
       },
     },
@@ -195,24 +195,75 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
     {
       $group: {
         _id: null,
-        totalBookings:{$sum:"$total"},
+        totalBookings: { $sum: "$total" },
         totalEarnings: { $sum: "$earnings" },
-        tour: { $push: "$$ROOT" }
+        tour: { $push: "$$ROOT" },
       },
     },
-    
+
     {
       $project: {
         _id: 0, // Exclude _id
         totalEarnings: 1,
-        tour:1,
-        totalBookings:1
+        tour: 1,
+        totalBookings: 1,
       },
     },
   ]);
-  // console.log("analytics", analytics);
-  res.status(200).send({
-    success: true,
-    analytics,
-  });
+  const userTotal = User.countDocuments();
+  const bookingsByMonth = Bookings.aggregate([
+    {
+      $lookup: {
+        from: "tours",
+        foreignField: "_id",
+        localField: "tour",
+        as: "tour",
+      },
+    },
+    {
+      $group: {
+        _id: { $month: "$createdAt" },
+        totalBookings: { $sum: 1 },
+      },
+    },
+  ]);
+  const revenuePerMonth = Bookings.aggregate([
+    {
+      $lookup: {
+        from: "tours",
+        foreignField: "_id",
+        localField: "tour",
+        as: "tour",
+      },
+    },
+    { $unwind: "$tour" },
+    {
+      $group: {
+        _id: { $month: "$createdAt" },
+        totalPrice: { $sum: "$tour.price" },
+      },
+    },
+    {
+      $sort: { _id: 1 },
+    },
+  ]);
+  try {
+    let [analyticsData, userData, bookingsData, revenueData] =
+      await Promise.all([
+        analytics,
+        userTotal,
+        bookingsByMonth,
+        revenuePerMonth,
+      ]);
+      res.status(200).send({
+        success: true,
+        analyticsData,
+        userData,
+        bookingsData,
+        revenueData,
+      });
+  } catch (err) {
+    next(new ApiError(500, "Error Fetching Data"));
+  }
+  
 });

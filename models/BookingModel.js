@@ -41,6 +41,11 @@ const bookingSchema=new mongoose.Schema({
     paymentId:{
         type:String,
         required:true
+    },
+    persons:{
+        type:Number,
+        
+        default:1
     }
 })
 bookingSchema.pre('save',async function(next)
