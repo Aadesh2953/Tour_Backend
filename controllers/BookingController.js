@@ -196,6 +196,7 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
     {
       $group: {
         _id: null,
+        totalTours:{$sum:"$total"},
         totalEarnings: { $sum: "$earnings" },
         tour: { $push: "$$ROOT" }
       },
@@ -205,12 +206,12 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
       $project: {
         _id: 0, // Exclude _id
         totalEarnings: 1,
-        tour:1
-        
+        tour:1,
+        totalTours:1
       },
     },
   ]);
-  console.log("analytics", analytics);
+  // console.log("analytics", analytics);
   res.status(200).send({
     success: true,
     analytics,
