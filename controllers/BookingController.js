@@ -192,11 +192,10 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
     {
       $sort: { total: -1 },
     },
- 
     {
       $group: {
         _id: null,
-        totalTours:{$sum:"$total"},
+        totalBookings:{$sum:"$total"},
         totalEarnings: { $sum: "$earnings" },
         tour: { $push: "$$ROOT" }
       },
@@ -207,7 +206,7 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
         _id: 0, // Exclude _id
         totalEarnings: 1,
         tour:1,
-        totalTours:1
+        totalBookings:1
       },
     },
   ]);
