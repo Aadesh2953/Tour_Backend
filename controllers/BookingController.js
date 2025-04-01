@@ -186,6 +186,8 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
         total: { $sum: 1 },
         tourName: { $first: "$tour.name" },
         location: { $first: "$tour.startLocation.description" },
+        price:{$first:"$tour.price"},
+        ratings:{$first:"$tour.ratingsAverage"},
         earnings: { $sum: "$tour.price" },
       },
     },
@@ -222,7 +224,7 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
     },
     {
       $group: {
-        _id: { $month: "$createdAt" },
+        _id:{$month:"$createdAt"},
         totalBookings: { $sum: 1 },
       },
     },
@@ -247,13 +249,37 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
       $sort: { _id: 1 },
     },
   ]);
+  const tourAnalysisByMonth = Bookings.aggregate([
+    {
+      $lookup: {
+        from: "tours",
+        foreignField: "_id",
+        localField: "tour",
+        as: "tour",
+      },
+    },
+    { $unwind: "$tour" },
+    {
+      $group: {
+        _id:
+        { 
+          month: {$month:"$createdAt"},
+          tour:"$tour._id"
+          
+        },
+        totalBookings: { $sum: 1 },
+        name:{$first:"$tour.name"}
+      },
+    },
+  ]);
   try {
-    let [analyticsData, userData, bookingsData, revenueData] =
+    let [analyticsData, userData, bookingsData, revenueData,monthlyTourAnalytics] =
       await Promise.all([
         analytics,
         userTotal,
         bookingsByMonth,
         revenuePerMonth,
+        tourAnalysisByMonth
       ]);
       res.status(200).send({
         success: true,
@@ -261,8 +287,10 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
         userData,
         bookingsData,
         revenueData,
+        monthlyTourAnalytics
       });
   } catch (err) {
+    console.log('error',err);
     next(new ApiError(500, "Error Fetching Data"));
   }
   

@@ -20,9 +20,15 @@ connectToDb().then(() => console.log("MongoDB connected!!!"));
 
 async function importDevData() {
   try {
-    const tourData = JSON.parse(fs.readFileSync(path.join(__dirname, "tours.json"), "utf-8"));
-    const reviewData = JSON.parse(fs.readFileSync(path.join(__dirname, "reviews.json"), "utf-8"));
-    const userData=JSON.parse(fs.readFileSync(path.join(__dirname, "users.json"), "utf-8"));
+    const tourData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "tours.json"), "utf-8")
+    );
+    const reviewData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "reviews.json"), "utf-8")
+    );
+    const userData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "users.json"), "utf-8")
+    );
     await Tour.create(tourData);
     await Reviews.create(reviewData);
     await User.create(userData);
@@ -46,6 +52,18 @@ async function deleteDevData() {
 // Check command-line arguments
 if (process.argv[2] === "--import") {
   importDevData();
-} else {
+}
+if (process.argv[2] === "--delete") {
   deleteDevData();
+}
+if (process.argv[2] === "--update") {
+  try {
+    await User.findByIdAndUpdate("67ebd318d59d670cb02187d2",{role:"admin"})
+    // await Tour.updateMany({
+    //   createdBy:"67ebd318d59d670cb02187d2"
+    // });
+    console.log('Updated Successfully!!')
+  } catch (err) {
+    console.log("error", err);
+  }
 }
