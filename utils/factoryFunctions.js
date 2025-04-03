@@ -20,7 +20,11 @@ export const deleteOne = (Model) => {
 export const updateOne = (Model) => {
   return asyncHandler(async (req, res, next) => {
     let imageCover, tourImages;
+
+    console.log('req',req.body);
+    // console.log('files',req.files);
     if (req.files) {
+      // console.log('here',req.files)
       const imageCoverPromise = req.files.imageCover
         ? uploadOnCloudinary(req.files.imageCover[0].path)
         : null;
@@ -36,9 +40,29 @@ export const updateOne = (Model) => {
       if (imageCoverResult) imageCover = imageCoverResult;
       if (tourImagesResults.length) tourImages = tourImagesResults;
     }
+    // if(req.body.locations)
+    //   {  
+    //    let locations=JSON.parse(req.body.locations)
+    //    req.body={...req.body,locations:locations}
+    //   }
+      if (req.body.startLocation ) {
+        req.body.startLocation = JSON.parse(req.body.startLocation);
+    }
+        
+    if(req.files.imageCover){
+     let imageCoverUrl=await uploadOnCloudinary(req.files.imageCover[0].path);
+     req.body={...req.body,imageCover:imageCoverUrl};
+    }
+    if(req.files.images)
+    {
+      let imageUrls=req.files.images.map((file)=>uploadOnCloudinary(file.path));
+      imageUrls = await Promise.all(imageUrls);
+      req.body={...req.body,images:imageUrls};
+    }
+    if(req.body.startDates)JSON.parse(req.body.startDates)
     const updatedItem = await Model.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, imageCover, images: tourImages },
+      { ...req.body },
       { new: true }
     );
     if (!updatedItem) return next(new ApiError(400, "Id Not Found!!"));

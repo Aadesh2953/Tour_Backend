@@ -50,7 +50,7 @@ export const handleDbError=(err,res)=>
 {
   
     res.status(500).json({
-    status:err.status,
+    status:err,
     message:"Something went wrong!!!"
    })
 }
