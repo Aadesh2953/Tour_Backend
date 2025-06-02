@@ -4,7 +4,6 @@ import crypto from "crypto";
 // import { sendEmail } from "../utils/email.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { filteredUser } from "../utils/filteredFiedls.js";
-import {deleteOne,updateOne,createOne,getOne,readAll} from '../utils/factoryFunctions.js'
 import { Email } from "../utils/email.js";
 import { Tour } from "../models/TourModel.js";
 import jwt from "jsonwebtoken";
@@ -34,7 +33,7 @@ export const getJWTToken = (id) => {
 export const singInUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   // console.log(process.env.STRIPE_SECRET_KEY);
-  if (!email  || !password) {
+  if (!email || !password) {
     return next(new ApiError(404, "Please enter a valid Email or Password"));
   }
 
@@ -60,7 +59,7 @@ export const singInUser = asyncHandler(async (req, res, next) => {
   };
   res.cookie("jwt", token, options);
   res.status(201).json({
-    success:true,
+    success: true,
     message: "Success",
     token,
     user,
@@ -69,12 +68,13 @@ export const singInUser = asyncHandler(async (req, res, next) => {
 
 export const signUpUser = asyncHandler(async (req, res, next) => {
   // console.log('files',req.file);
-  const existingUser = await User.findOne({$or:[{ email: req.body.email },{name:req.body.name}]});
+  const existingUser = await User.findOne({
+    $or: [{ email: req.body.email }, { name: req.body.name }],
+  });
   if (existingUser) return next(new ApiError(401, "User Already Exists"));
   let imageUrl;
-  if(req.file)
-  {
-    imageUrl=await uploadOnCloudinary(req.file.path);
+  if (req.file) {
+    imageUrl = await uploadOnCloudinary(req.file.path);
   }
   let newUser = await User.create({
     name: req.body.name,
@@ -82,9 +82,11 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     password: req.body.password,
     role: req.body.role,
     confirmPassword: req.body.confirmPassword,
-    photo:imageUrl
+    photo: imageUrl,
   });
-  //  Promise.all([new Email(newUser, `${req.protocol}://${req.get('host')}/me`).sendWelcome()]);
+  Promise.all([
+    new Email(newUser, `${req.protocol}://${req.get("host")}/me`).sendWelcome(),
+  ]);
   const token = getJWTToken(newUser._id);
   let options = {
     expiresIn: new Date(
@@ -102,15 +104,16 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
   });
 });
 export const forgotPassword = asyncHandler(async (req, res, next) => {
-  
-  const user = await User.findOne({ email: req.user.email });
+  const user = await User.findOne({ email: req.user?.email || req.body.email });
   if (!user) {
     return next(new ApiError(404, "User Not Found With This Email!!"));
   }
   const generateToken = await user.createPasswordResetToken();
-  const resetUrl = `${req.protocol}://${req.get('host')}/forgotPassword/${generateToken}`;
-// const message = `Forgot Your Password? No worries Click on the link below to reset your password!! <br/> ${resetUrl}`;
- await new Email(user,resetUrl).sendResetPassword(); 
+  const resetUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/forgotPassword/${generateToken}`;
+  
+  await new Email(user, resetUrl).sendResetPassword();
   await user.save({ validateBeforeSave: false });
   res.status(200).json({
     message: "Token Sent to Email!!",
@@ -163,7 +166,8 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
   });
 });
 export const updateExistingPassword = asyncHandler(async (req, res, next) => {
-  if(req.body.currentPassword==req.body.password)next(new ApiError(400,'Old and New Passwords are same!!'))
+  if (req.body.currentPassword == req.body.password)
+    next(new ApiError(400, "Old and New Passwords are same!!"));
   const user = await User.findById(req.user?.id).select("+password");
   if (!user) return next(new ApiError(404, "user Not Found!!!"));
   if (!(await user.isPasswordCorrect(req.body?.currentPassword))) {
@@ -174,8 +178,8 @@ export const updateExistingPassword = asyncHandler(async (req, res, next) => {
   const newToken = getJWTToken(user._id);
   await user.save({ validateBeforeSave: false });
   res.status(200).json({
-    success:true,
-     user,
+    success: true,
+    user,
     newToken,
   });
 });
@@ -193,16 +197,16 @@ export const updateUser = asyncHandler(async (req, res, next) => {
   if (!user) {
     return next(new ApiError(404, "User Not Found!!!"));
   }
-  let url
-  if(req.file && req.file.path){
-    url=await uploadOnCloudinary(req.file.path)
+  let url;
+  if (req.file && req.file.path) {
+    url = await uploadOnCloudinary(req.file.path);
   }
   // console.log('url')
   const body = filteredBody(req.body, "role");
   // console.log('body',body);
   const updatedUser = await User.findByIdAndUpdate(
     req.user.id,
-    { ...body,photo:url},
+    { ...body, photo: url },
     { new: true, runValidators: true }
   );
   res.status(200).json({
@@ -211,7 +215,7 @@ export const updateUser = asyncHandler(async (req, res, next) => {
   });
 });
 export const deleteUser = asyncHandler(async (req, res, next) => {
-  let user = await User.deleteOne({email:'tp1234@yopmail.com'});
+  let user = await User.deleteOne({ email: "tp1234@yopmail.com" });
   if (!user) {
     return next(new ApiError(401, "User Not Found!!!"));
   }
@@ -220,50 +224,48 @@ export const deleteUser = asyncHandler(async (req, res, next) => {
     message: "User Deleted Successfully",
   });
 });
-export const getLoggedInUser=asyncHandler(async(req,res,next)=>
-{
-  let userId=req.user._id;
-  const user=await User.findById(userId).select(filteredUser());
+export const getLoggedInUser = asyncHandler(async (req, res, next) => {
+  let userId = req.user._id;
+  const user = await User.findById(userId).select(filteredUser());
   res.status(200).send({
-    status:"Success",
-    message:"user Found Successfully!!",
-  data:user,
-  })
-})
-export const getMyTours=asyncHandler(async(req,res,next)=>{
-  const userId=req.user._id;
- 
-   let feature=new ApiFeature(Tour.find({createdBy:userId}),req.query).filter()
-   .sort()
-   .limitFeilds()
-   .paginate();
-   let MyTours =await feature.query;
-   let hasNext=false
-   const total=await Tour.countDocuments()
-   if(req.query?.page) hasNext=total<req.query?.page*1*req.query?.limit*1?false:true;
-   res.status(200).send({
-    success:true,
+    status: "Success",
+    message: "user Found Successfully!!",
+    data: user,
+  });
+});
+export const getMyTours = asyncHandler(async (req, res, next) => {
+  const userId = req.user._id;
+
+  let feature = new ApiFeature(Tour.find({ createdBy: userId }), req.query)
+    .filter()
+    .sort()
+    .limitFeilds()
+    .paginate();
+  let MyTours = await feature.query;
+  let hasNext = false;
+  const total = await Tour.countDocuments({ createdBy: userId });
+  if (req.query?.page)
+    hasNext = total < req.query?.page * 1 * req.query?.limit * 1 ? false : true;
+  res.status(200).send({
+    success: true,
     MyTours,
     hasNext,
     total,
-    status:"success"
-   })
-   
-})
-export const getMyBookings=asyncHandler(async(req,res,next)=>{
-  const query=new ApiFeature(req.query);
-  const myBookings=await Bookings.find({createdBy:req.user.id});
-  if(myBookings.length==0)
-  {
+    status: "success",
+  });
+});
+export const getMyBookings = asyncHandler(async (req, res, next) => {
+  const query = new ApiFeature(req.query);
+  const myBookings = await Bookings.find({ createdBy: req.user.id });
+  if (myBookings.length == 0) {
     res.status(200).send({
-      success:true,
-      message:"No Bookings to Display Here Book a tour Now"
-    })
+      success: true,
+      message: "No Bookings to Display Here Book a tour Now",
+    });
   }
   res.status(200).send({
-    items:myBookings.length,
-    success:true,
-    data:myBookings,
-  })
-  
-})
+    items: myBookings.length,
+    success: true,
+    data: myBookings,
+  });
+});

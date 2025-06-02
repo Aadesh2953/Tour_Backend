@@ -7,7 +7,7 @@ export const apiErrorHandler=(err,req,res,next)=>
      handleDbError(err,res)
      return
    }
-   
+
    if(err.name=='JsonWebTokenError')
    {
      handleJSONWebTokenError(err,res);

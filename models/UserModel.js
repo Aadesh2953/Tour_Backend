@@ -12,13 +12,13 @@ export const userModel = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "A password is a required Field!!"],
-    minLength: [true, "minLength must be of 8 characters"],
+    minlength: [8, "minLength must be of 8 characters"],
   },
   // confirmPassword: {
   //   type: String,
   //   required: [true, "A password is a required Field!!"],
   //   minLength: [8, "minLength must be of 8 characters"],
-  //   validate: {
+  //    : {
   //     validator: function (val) {
   //       return val === this.password;
   //     },
@@ -35,10 +35,10 @@ export const userModel = new mongoose.Schema({
     unique: true,
     required: [true, "A Email is a required Field!!"],
   },
-  active:{
-    type:Boolean,
-    default:true,
-    select:false,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
   },
 
   photo: String,
@@ -47,18 +47,17 @@ export const userModel = new mongoose.Schema({
   passwordResetTokenExpires: Date,
 });
 userModel.pre("save", async function (next) {
-if (!this.isModified("password")) {
+  if (!this.isModified("password")) {
     return next();
   }
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordChangeDate = Date.now() - 1000;
   next();
 });
-userModel.pre(/^find/,function(next)
-{
-  this.find({active:{$ne:false}});
+userModel.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
   next();
-})
+});
 userModel.methods.isPasswordCorrect = async function (password) {
   return bcrypt.compare(password, this.password);
 };
@@ -66,7 +65,7 @@ userModel.methods.isPasswordUpdated = function (jwtIat) {
   const passwordUpdatedDate = parseInt(
     this.passwordChangeDate?.getTime() / 1000
   );
-  
+
   if (passwordUpdatedDate > jwtIat) {
     return true;
   }

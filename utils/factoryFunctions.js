@@ -2,6 +2,7 @@ import { uploadOnCloudinary } from "../cloudinary/cloudinary.js";
 import { User } from "../models/UserModel.js";
 import ApiError from "./ApiError.js";
 import { asyncHandler } from "./AsyncHandler.js";
+import fs from "fs";
 import ApiFeature from "./FilteredQuery.js";
 const getUserId = async (id) => {
   const user = await User.findById(id);
@@ -21,16 +22,20 @@ export const updateOne = (Model) => {
   return asyncHandler(async (req, res, next) => {
     let imageCover, tourImages;
 
-    console.log('req',req.body);
-    // console.log('files',req.files);
     if (req.files) {
-      // console.log('here',req.files)
       const imageCoverPromise = req.files.imageCover
         ? uploadOnCloudinary(req.files.imageCover[0].path)
         : null;
       const tourImagesPromises = req.files.tourImages
         ? req.files.tourImages.map((file) => uploadOnCloudinary(file.path))
         : [];
+      // Clean up temporary files
+      if (req.files.imageCover)
+        fs.unlink(req.files.imageCover[0].path, (err) => {
+          if (err) {
+            console.error("Error deleting image cover file:", err);
+          }
+        });
 
       // Execute uploads in parallel
       const [imageCoverResult, tourImagesResults] = await Promise.all([
@@ -40,26 +45,25 @@ export const updateOne = (Model) => {
       if (imageCoverResult) imageCover = imageCoverResult;
       if (tourImagesResults.length) tourImages = tourImagesResults;
     }
-    // if(req.body.locations)
-    //   {  
-    //    let locations=JSON.parse(req.body.locations)
-    //    req.body={...req.body,locations:locations}
-    //   }
-      if (req.body.startLocation ) {
-        req.body.startLocation = JSON.parse(req.body.startLocation);
+
+    if (req.body.startLocation) {
+      req.body.startLocation = JSON.parse(req.body.startLocation);
     }
-        
-    if(req.files.imageCover){
-     let imageCoverUrl=await uploadOnCloudinary(req.files.imageCover[0].path);
-     req.body={...req.body,imageCover:imageCoverUrl};
+
+    if (req.files.imageCover) {
+      let imageCoverUrl = await uploadOnCloudinary(
+        req.files.imageCover[0].path
+      );
+      req.body = { ...req.body, imageCover: imageCoverUrl };
     }
-    if(req.files.images)
-    {
-      let imageUrls=req.files.images.map((file)=>uploadOnCloudinary(file.path));
+    if (req.files.images) {
+      let imageUrls = req.files.images.map((file) =>
+        uploadOnCloudinary(file.path)
+      );
       imageUrls = await Promise.all(imageUrls);
-      req.body={...req.body,images:imageUrls};
+      req.body = { ...req.body, images: imageUrls };
     }
-    if(req.body.startDates)JSON.parse(req.body.startDates)
+    if (req.body.startDates) JSON.parse(req.body.startDates);
     const updatedItem = await Model.findByIdAndUpdate(
       req.params.id,
       { ...req.body },
@@ -76,7 +80,6 @@ export const updateOne = (Model) => {
 
 export const createOne = (Model) => {
   return asyncHandler(async (req, res, next) => {
-  
     if (req.body.startDates) {
       if (typeof req.body.startDates === "string") {
         try {
@@ -90,33 +93,35 @@ export const createOne = (Model) => {
       }
     }
 
-   if(req.body.locations)
-   {  
-    req.body.locations=JSON.parse(req.body.locations)
-   }
-   if(req.body.startLocation)req.body.startLocation=JSON.parse(req.body.startLocation);
-
+    if (req.body.locations) {
+      req.body.locations = JSON.parse(req.body.locations);
+    }
+    if (req.body.startLocation)
+      req.body.startLocation = JSON.parse(req.body.startLocation);
 
     if (req.body.createdBy) {
       let user_id = await getUserId(req.body.createdBy);
       req.body = { ...req.body, createdBy: user_id };
     }
-    
- if(req.files.imageCover){
-  let imageCoverUrl=await uploadOnCloudinary(req.files.imageCover[0].path);
-  req.body={...req.body,imageCover:imageCoverUrl};
- }
- if(req.files.images)
- {
-   let imageUrls=req.files.images.map((file)=>uploadOnCloudinary(file.path));
-   imageUrls = await Promise.all(imageUrls);
-   req.body={...req.body,images:imageUrls};
- }
+
+    if (req.files.imageCover) {
+      let imageCoverUrl = await uploadOnCloudinary(
+        req.files.imageCover[0].path
+      );
+      req.body = { ...req.body, imageCover: imageCoverUrl };
+    }
+    if (req.files.images) {
+      let imageUrls = req.files.images.map((file) =>
+        uploadOnCloudinary(file.path)
+      );
+      imageUrls = await Promise.all(imageUrls);
+      req.body = { ...req.body, images: imageUrls };
+    }
     // console.log('here');
     const newData = await Model.create(req.body);
 
     res.status(201).json({
-      success:true,
+      success: true,
       status: "Success",
       data: {
         tour: newData,
@@ -152,7 +157,6 @@ export const readAll = (Model) => {
       .limitFeilds()
       .paginate();
     const total = await Model.countDocuments();
-
 
     const data = await features.query;
 

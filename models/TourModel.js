@@ -1,171 +1,168 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 import { User } from "./UserModel.js";
-const TourSchema=new mongoose.Schema({
-    name:{
-        type:String,
-        required:[true,'A tour must have Name'],
-        trim:true,
-        maxLength:[40,'Too Long Name For the Tour!!'],
-        minLength:[1,'Minimum number of elements should be 1'],
-        unique:true,
+const TourSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "A tour must have Name"],
+      trim: true,
+      maxLength: [40, "Too Long Name For the Tour!!"],
+      minLength: [1, "Minimum number of elements should be 1"],
+      unique: true,
     },
-    price:{
-        type:Number,
-        required:[true,'A tour Must Not Be Free!!!'],
-     },
+    price: {
+      type: Number,
+      required: [true, "A tour Must Not Be Free!!!"],
+    },
     //  rating:{
     //     type:Number,
     //     max:[5,'Max Rating must be 5'],
     //     min:[1,'Min Rating must be 1'],
-    //     default:0 
+    //     default:0
     //  },
-     duration:{
-        type:Number,
-        required:[true,'A Tour must Have A duration']
-     },
-    difficulty:{
-        type:String,
-        required:[true,'A tour must have a difficulty Rating'],
-        enum:{
-            values:['easy','medium','hard'],
-            message:"Difficulty must be hard,easy and medium"
-        }
+    duration: {
+      type: Number,
+      required: [true, "A Tour must Have A duration"],
     },
-    ratingsAverage:{
-     type:Number,
-     min:[1,'Min Rating must be 1'],
-     max:[5,'Min Rating must be 5'],
-     default:4.5
+    difficulty: {
+      type: String,
+      required: [true, "A tour must have a difficulty Rating"],
+      enum: {
+        values: ["easy", "medium", "hard"],
+        message: "Difficulty must be hard,easy and medium",
+      },
+      default: "easy",
     },
-    ratingsQuantity:{
-        type:Number,
-        default:0
+    ratingsAverage: {
+      type: Number,
+      min: [1, "Min Rating must be 1"],
+      max: [5, "Min Rating must be 5"],
+      default: 4.5,
     },
-    priceDisount:{
-        type:Number,
-        validate:{
-            validator:function(val){return val<this.price},
-            message:'priceDiscount should be less than {val}'
-        } 
-
+    ratingsQuantity: {
+      type: Number,
+      default: 0,
     },
-    summary:{
-        type:String,
-        trim:true,
-        required:[true,'A summary For A Tour is Neccessary!!!']
+    priceDisount: {
+      type: Number,
+      validate: {
+        validator: function (val) {
+          return val < this.price;
+        },
+        message: "priceDiscount should be less than {val}",
+      },
     },
-    description:{
-        type:String,
-        trim:true,
+    summary: {
+      type: String,
+      trim: true,
+      required: [true, "A summary For A Tour is Neccessary!!!"],
     },
-    imageCover:{
-        type:String,
-        required:[true,'A Tour must have an Image Cover!']
+    description: {
+      type: String,
+      trim: true,
     },
-    images:[
-     {
-        type:String,
-        required:[true,'Images For a Tour Is Required!!!']
-     }
+    imageCover: {
+      type: String,
+      required: [true, "A Tour must have an Image Cover!"],
+    },
+    images: [
+      {
+        type: String,
+        required: [true, "Images For a Tour Is Required!!!"],
+      },
     ],
-    startDates:[
-        {
-            type:Date,
-            required:[true,'Start Date IS Required']
-        }
+    startDates: [
+      {
+        type: Date,
+        required: [true, "Start Date IS Required"],
+      },
     ],
-    slug:{
-        type:String,
+    slug: {
+      type: String,
     },
-    secretTour:{
-        type:Boolean,
-        default:false
+    secretTour: {
+      type: Boolean,
+      default: false,
     },
-    startLocation:{
-       type:{
-        type:String,
-        default:'Point',
-        enum:['Point']
-       },
-       coordinates:[Number],
-       address:String,
-       description:String
+    startLocation: {
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
     },
-    locations:[
-        {
-        type:{
-            type:String,
-            default:'Point',
-            enum:['Point']
-            },
-        coordinates:[Number],
-        address:String,
-        description:String
-        }
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        locationImages: String,
+        days: Number,
+      },
     ],
-    guides:[
-        {
-            type:mongoose.Schema.ObjectId,
-            ref:'User'
-        }
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+      },
     ],
-    createdBy:{
-        type:mongoose.Schema.ObjectId,
-        ref:'User'
-    }
-},
-{
-  toJSON:{virtuals:true},
-  toObject:{virtuals:true}  
-},
-{
-    timeStamps:true
-})
+    createdBy: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+    },
+  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
+  {
+    timeStamps: true,
+  }
+);
 // TourSchema.set('toJSON',{virtuals:true})
-TourSchema.index({price:1,ratingsAverage:-1});
-TourSchema.index({slug:1});
-TourSchema.index({startLocation:"2dsphere"});
-TourSchema.pre(/^find/,function(next)
-{
-    this.find({secretTour:{$ne:true}})
-    let filteredFeilds='-__v,-passwordChangedAt,-password,-confirmPassword,-passwordChangeDate,-passwordResetToken,-passwordResetTokenExpires,-role'
-    this.populate({path:'guides',select:filteredFeilds.split(',').join(" ")});
-    next()
-})
-TourSchema.virtual('tourReviews',{
-    ref:'Reviews',
-    foreignField:'tour',
-    localField:'_id',
+TourSchema.index({ price: 1, ratingsAverage: -1 });
+TourSchema.index({ slug: 1 });
+TourSchema.index({ startLocation: "2dsphere" });
+TourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  let filteredFeilds =
+    "-__v,-passwordChangedAt,-password,-confirmPassword,-passwordChangeDate,-passwordResetToken,-passwordResetTokenExpires,-role";
+  this.populate({
+    path: "guides",
+    select: filteredFeilds.split(",").join(" "),
+  });
+  //   this.reviewCount = this.tourReviews.countDocuments();
+  next();
 });
-TourSchema.virtual("weekDuration").get(function()
-{
-  return this.duration/7;   
-})
-TourSchema.pre("save",function(next)
-{
-    // console.log('beforeSAVE')
-    this.slug=slugify(this.name,{lower:true})
-    next()
-})
-TourSchema.pre('save',async function(next)
-{
-    // console.log('before Save called')
-    const guides=this.guides.map(async(id)=>await User.findById(id));
-    this.guides=await Promise.all(guides);
-    let email=this.createdBy
-    let user=await User.findOne({email});
-    
-    next();
-})
-TourSchema.pre("aggregate",function(next)
-{
-    this.pipeline().unshift({$match:{secretTour:{$ne:true}}})   
-    next()
-})
-// TourSchema.virtual('bookings',{
-//     foreignField:'tour',
-//     localField:'_id',
-//     ref:'Bookings'
-// })
-export const Tour=new mongoose.model('Tour',TourSchema)
+TourSchema.virtual("tourReviews", {
+  ref: "Reviews",
+  foreignField: "tour",
+  localField: "_id",
+});
+
+TourSchema.virtual("weekDuration").get(function () {
+  return this.duration / 7;
+});
+TourSchema.pre("save", function (next) {
+  // console.log('beforeSAVE')
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+TourSchema.pre("save", async function (next) {
+  const guides = this.guides.map(async (id) => await User.findById(id));
+  this.guides = await Promise.all(guides);
+  let email = this.createdBy;
+  let user = await User.findOne({ email });
+
+  next();
+});
+export const Tour = new mongoose.model("Tour", TourSchema);

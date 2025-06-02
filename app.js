@@ -45,7 +45,7 @@ app.all("*", (req, res, next) => {
   next(
     new ApiError(
       "404",
-      `Route does Not Exist for ${req.originalUrl} on this Server`
+      `Can't find ${req.originalUrl} on this server`,
     )
   );
 });

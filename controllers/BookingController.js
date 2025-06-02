@@ -22,7 +22,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
       {
         // selectedDate: req.body.selectedDate,
         price_data: {
-          currency: "usd",
+          currency: "inr",
           product_data: {
             name: `${tour.name} Tour`,
             description: tour.summary,
@@ -136,7 +136,8 @@ export const cancelBooking = asyncHandler(async (req, res, next) => {
     next(new ApiError(400, "Booking with Given Id is Not Found!!"));
   const canceledBooking = await Bookings.findByIdAndUpdate(req.params.id, {
     $set: { status: "Cancelled" },
-  });
+    
+  },{new:true}  );
   if (!canceledBooking)
     next(new ApiError(400, "Booking Cancelation Request Failed "));
   res.status(200).send({
