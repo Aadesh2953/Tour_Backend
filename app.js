@@ -36,7 +36,7 @@ app.use(
   cors({
     origin: ["https://tour-frontend-dkfo.vercel.app/"], // allow your Vercel frontend
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    // credentials: true,
   })
 ); // Allows requests from any origin
 const limiter = rateLimit({
