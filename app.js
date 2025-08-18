@@ -14,6 +14,10 @@ import { webHookController } from "./controllers/BookingController.js";
 import compression from "compression";
 import cronTasks from "./cron/cronTasks.js";
 // import { verifyToken } from "./middlewares/AuthMiddleWare.js";
+const allowedOrigins = [
+  "http://localhost:5173", // local dev
+  "https://tour-frontend-dkfo.vercel.app", // vercel frontend
+];
 const app = express();
 app.use(helmet());
 
@@ -34,11 +38,19 @@ app.use(mongoSanitize());
 app.use(xss());
 app.use(
   cors({
-    origin: ["https://tour-frontend-dkfo.vercel.app/"], // allow your Vercel frontend
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    // credentials: true,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"], // 👈 include Authorization
+    credentials: true,
   })
-); // Allows requests from any origin
+);
 const limiter = rateLimit({
   max: 1000,
   windowMs: 60 * 60 * 1000,
