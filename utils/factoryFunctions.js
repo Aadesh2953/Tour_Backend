@@ -36,8 +36,6 @@ export const updateOne = (Model) => {
             console.error("Error deleting image cover file:", err);
           }
         });
-
-      // Execute uploads in parallel
       const [imageCoverResult, tourImagesResults] = await Promise.all([
         imageCoverPromise,
         Promise.all(tourImagesPromises),
@@ -56,6 +54,7 @@ export const updateOne = (Model) => {
       );
       req.body = { ...req.body, imageCover: imageCoverUrl };
     }
+
     if (req.files.images) {
       let imageUrls = req.files.images.map((file) =>
         uploadOnCloudinary(file.path)
@@ -92,7 +91,9 @@ export const createOne = (Model) => {
         }
       }
     }
-
+    console.log("files", req.files);
+    console.log("multipleImages", req.files.images);
+    console.log("singleCover", req.files.imageCover);
     if (req.body.locations) {
       req.body.locations = JSON.parse(req.body.locations);
     }
@@ -115,6 +116,12 @@ export const createOne = (Model) => {
         uploadOnCloudinary(file.path)
       );
       imageUrls = await Promise.all(imageUrls);
+      // fs.unlink(
+      //   req.files.images.map((file) => file.path),
+      //   (err) => {
+      //     console.log("Error", err);
+      //   }
+      // );
       req.body = { ...req.body, images: imageUrls };
     }
     // console.log('here');
@@ -131,18 +138,13 @@ export const createOne = (Model) => {
 };
 export const getOne = (Model, populateOptions) => {
   return asyncHandler(async (req, res, next) => {
-    // console.log('user',req.user)
     let data = await Model.findById(req.params.id)
       .populate(populateOptions)
       .lean();
-
     let isReviewSubmitted = await data?.tourReviews?.some(
       (review) => review.user._id == req.user.id
     );
-    //  c
-    // console.log('review',isReviewSubmitted)
     data = { ...data, isReviewSubmitted: isReviewSubmitted };
-
     res.status(201).json({
       status: "Success",
       data,

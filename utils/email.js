@@ -2,6 +2,8 @@ import nodemailer from "nodemailer";
 import pug from "pug";
 import path from "path";
 import { fileURLToPath } from "url";
+import { AdminMail } from "../views/templates/AdminMail.js";
+import { customerMail } from "../views/templates/CustomerMail.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -17,32 +19,45 @@ export class Email {
       host: "smtp.gmail.com",
       port: 587,
       secure: false,
-      service: "SendGrid",
+      service: "gmail",
       auth: {
-        user: "apikey",
-        pass: process.env.SENDGRID_API_KEY,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
   }
-  async sendMail(template, subject) {
-    const html = pug.renderFile(
-      path.join(__dirname, "../views/templates/", `${template}.pug`),
-      { name: this.name, sendTo: this.sendTo, subject, url: this.url }
-    );
+  async sendMail(template, subject, data = {}) {
+    // console.log("template", template);
+    let html;
+    if (template === "AdminMail" || template == "CustomerMail") {
+      if (!data) return;
+
+      if (template == "AdminMail") html = AdminMail(data);
+      else html = customerMail(data);
+    } else {
+      html = pug.renderFile(
+        path.join(__dirname, "../views/templates/", `${template}.pug`),
+        { name: this.name, sendTo: this.sendTo, subject, url: this.url }
+      );
+    }
     const mailOptions = {
       from: "shuklaanmish@gmail.com",
-      to: this.sendTo,
+      to: "shuklaanmish@gmail.com",
       subject,
       html,
     };
-    await this.createTransport().sendMail(mailOptions);
+    this.createTransport().sendMail(mailOptions);
   }
   async sendWelcome() {
     await this.sendMail("Welcome", "Welcome To TourQuest");
   }
   async sendResetPassword() {
-  // console.log('called')
+    // console.log('called')
     await this.sendMail("resetPassword", "Reset Your Password");
+  }
+  async sendTourStartMailAdmin(data) {
+    let subject = `Tour Started: ${data?.name} - ID: ${data?._id}`;
+    await this.sendMail("AdminMail", subject, data);
   }
 }
 // export const sendEmail=async(options)=>
@@ -52,7 +67,7 @@ export class Email {
 //         host: 'smtp.gmail.com',
 //         port: 587, // Use 465 if using secure:true
 //         secure: false,
-//         service:"gmail",
+// p        service:"gmail",
 //         auth:{
 //             user:process.env.EMAIL_USER,
 //             pass:process.env.EMAIL_PASSWORD

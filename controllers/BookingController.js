@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { Bookings } from "../models/BookingModel.js";
 import { User } from "../models/UserModel.js";
 import ApiFeature from "../utils/FilteredQuery.js";
-import { response } from "express";
+import mongoose from "mongoose";
 export const getBooking = asyncHandler(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id);
   if (!tour) {
@@ -36,7 +36,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
     mode: "payment",
     metadata: {
       selectedDate: new Date(req.body.selectedDate).toISOString(),
-      persons:req.body.persons
+      persons: req.body.persons,
     }, // Required field for checkout session
   });
 
@@ -60,11 +60,11 @@ export const createBooking = async (session) => {
       price,
       selectedDate,
       paymentId: session.payment_intent,
-      persons:session.metadata.persons
+      persons: session.metadata.persons,
     });
     return response;
   } catch (err) {
-      console.log("err", err);
+    console.log("err", err);
     return err;
   }
 };
@@ -83,16 +83,9 @@ export const webHookController = asyncHandler(async (req, res, next) => {
     res.status(500).send(`${error}`);
   }
   const session = event.data.object;
-  // const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-  //   expand: ["line_items"],
-  // })
-  // ;
-  let response;
   if (event.type === "checkout.session.completed") {
     response = await createBooking(session);
-    // res.status(200).send({data:event.data.object});
   }
-  // res.status(400).send('')
   res.status(200).json({
     success: true,
     message: "Webhook processed",
@@ -134,10 +127,13 @@ export const getAllBookings = asyncHandler(async (req, res, next) => {
 export const cancelBooking = asyncHandler(async (req, res, next) => {
   if (!req.params.id)
     next(new ApiError(400, "Booking with Given Id is Not Found!!"));
-  const canceledBooking = await Bookings.findByIdAndUpdate(req.params.id, {
-    $set: { status: "Cancelled" },
-    
-  },{new:true}  );
+  const canceledBooking = await Bookings.findByIdAndUpdate(
+    req.params.id,
+    {
+      $set: { status: "Cancelled" },
+    },
+    { new: true }
+  );
   if (!canceledBooking)
     next(new ApiError(400, "Booking Cancelation Request Failed "));
   res.status(200).send({
@@ -149,15 +145,13 @@ export const cancelBooking = asyncHandler(async (req, res, next) => {
 export const getBookingDetails = asyncHandler(async (req, res, next) => {
   let bookingDetails = await Bookings.findById(req.params.id)
     .populate("tour")
-    .populate({
-      path: "user",
-      select: "name email",
-    });
+    .populate("user");
+
   if (!bookingDetails) {
     return next(new ApiError(404, "Booking Not Found!!"));
   }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  
   const paymentMethod = await stripe.paymentIntents.retrieve(
     bookingDetails.paymentId,
     {
@@ -180,15 +174,21 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
         as: "tour",
       },
     },
+
     { $unwind: "$tour" },
+    {
+      $match: {
+        "tour.createdBy": new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
     {
       $group: {
         _id: "$tour._id",
         total: { $sum: 1 },
         tourName: { $first: "$tour.name" },
         location: { $first: "$tour.startLocation.description" },
-        price:{$first:"$tour.price"},
-        ratings:{$first:"$tour.ratingsAverage"},
+        price: { $first: "$tour.price" },
+        ratings: { $first: "$tour.ratingsAverage" },
         earnings: { $sum: "$tour.price" },
       },
     },
@@ -213,6 +213,8 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
+  const creatorId = new mongoose.Types.ObjectId(req.user._id);
+
   const userTotal = User.countDocuments();
   const bookingsByMonth = Bookings.aggregate([
     {
@@ -223,9 +225,15 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
         as: "tour",
       },
     },
+    { $unwind: "$tour" },
+    {
+      $match: {
+        "tour.createdBy": creatorId,
+      },
+    },
     {
       $group: {
-        _id:{$month:"$createdAt"},
+        _id: { $month: "$createdAt" },
         totalBookings: { $sum: 1 },
       },
     },
@@ -240,6 +248,11 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
       },
     },
     { $unwind: "$tour" },
+    {
+      $match: {
+        "tour.createdBy": creatorId,
+      },
+    },
     {
       $group: {
         _id: { $month: "$createdAt" },
@@ -261,38 +274,45 @@ export const getAnalytics = asyncHandler(async (req, res, next) => {
     },
     { $unwind: "$tour" },
     {
+      $match: {
+        "tour.createdBy": creatorId,
+      },
+    },
+    {
       $group: {
-        _id:
-        { 
-          month: {$month:"$createdAt"},
-          tour:"$tour._id"
-          
+        _id: {
+          month: { $month: "$createdAt" },
+          tour: "$tour._id",
         },
         totalBookings: { $sum: 1 },
-        name:{$first:"$tour.name"}
+        name: { $first: "$tour.name" },
       },
     },
   ]);
   try {
-    let [analyticsData, userData, bookingsData, revenueData,monthlyTourAnalytics] =
-      await Promise.all([
-        analytics,
-        userTotal,
-        bookingsByMonth,
-        revenuePerMonth,
-        tourAnalysisByMonth
-      ]);
-      res.status(200).send({
-        success: true,
-        analyticsData,
-        userData,
-        bookingsData,
-        revenueData,
-        monthlyTourAnalytics
-      });
+    let [
+      analyticsData,
+      userData,
+      bookingsData,
+      revenueData,
+      monthlyTourAnalytics,
+    ] = await Promise.all([
+      analytics,
+      userTotal,
+      bookingsByMonth,
+      revenuePerMonth,
+      tourAnalysisByMonth,
+    ]);
+    res.status(200).send({
+      success: true,
+      analyticsData,
+      userData,
+      bookingsData,
+      revenueData,
+      monthlyTourAnalytics,
+    });
   } catch (err) {
-    console.log('error',err);
+    console.log("error", err);
     next(new ApiError(500, "Error Fetching Data"));
   }
-  
 });

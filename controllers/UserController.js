@@ -25,10 +25,13 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
   });
 });
 export const getJWTToken = (id) => {
-  const JWTtoken = jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: Date.now() + process.env.JWT_EXPIRES_IN * 1000 * 60 * 60,
+  const accessToken = jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
-  return JWTtoken;
+  const refreshToken = jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+  });
+  return { accessToken, refreshToken };
 };
 export const singInUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
@@ -49,19 +52,14 @@ export const singInUser = asyncHandler(async (req, res, next) => {
     return next(new ApiError(400, "Please Enter Your Password Correctly"));
   }
 
-  const token = getJWTToken(user._id); // Function to generate token
-  let options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    // httpOnly:true,
-    // secure:true,
-  };
-  res.cookie("jwt", token, options);
+  const { refreshToken, accessToken } = getJWTToken(user._id); // Function to generate token
+
+  // res.cookie("jwt", token, options);
   res.status(201).json({
     success: true,
     message: "Success",
-    token,
+    refreshToken: refreshToken,
+    accessToken: accessToken,
     user,
   });
 });
@@ -87,24 +85,21 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
   Promise.all([
     new Email(newUser, `${req.protocol}://${req.get("host")}/me`).sendWelcome(),
   ]);
-  const token = getJWTToken(newUser._id);
-  let options = {
-    expiresIn: new Date(
-      Date.now() + process.env.JWT_EXPIRES_IN * 1000 * 60 * 60
-    ),
-    // httpOnly:true,
-    // secure:true,
-  };
-  res.cookie("jwt", token, options);
+  const { refreshToken, accessToken } = getJWTToken(newUser._id);
+
+  // res.cookie("jwt", token, options);
   res.status(201).json({
     message: "User Successfully Created",
     user: newUser,
-    token,
+    refreshToken: refreshToken,
+    accessToken: accessToken,
     status: "Success",
   });
 });
 export const forgotPassword = asyncHandler(async (req, res, next) => {
-  const user = await User.findOne({ email: req.user?.email || req.body.email });
+  const user = await User.findOne({
+    $or: [{ email: req.user?.email }, { name: req.user?.name }],
+  });
   if (!user) {
     return next(new ApiError(404, "User Not Found With This Email!!"));
   }
@@ -112,7 +107,6 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   const resetUrl = `${req.protocol}://${req.get(
     "host"
   )}/forgotPassword/${generateToken}`;
-  
   await new Email(user, resetUrl).sendResetPassword();
   await user.save({ validateBeforeSave: false });
   res.status(200).json({
@@ -153,15 +147,13 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
   user.confirmPassword = confirmPassword;
   user.passwordResetToken = undefined;
   user.passwordResetTokenExpires = undefined;
-  const newToken = getJWTToken(user._id);
+  const { refreshToken, accessToken } = getJWTToken(user._id);
   await user.save({ validateBeforeSave: true });
-  let options = {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  };
-  res.cookie("jwt", token, options);
+
   res.status(201).json({
     message: "Password Reset Successfully",
-    token: newToken,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
     status: "Success",
   });
 });
@@ -175,12 +167,13 @@ export const updateExistingPassword = asyncHandler(async (req, res, next) => {
   }
   user.password = req.body.password;
   user.confirmPassword = req.body.confirmPassword;
-  const newToken = getJWTToken(user._id);
+  const { refreshToken, accessToken } = getJWTToken(user._id);
   await user.save({ validateBeforeSave: false });
   res.status(200).json({
     success: true,
     user,
-    newToken,
+    refreshToken,
+    accessToken,
   });
 });
 export const updateUser = asyncHandler(async (req, res, next) => {
@@ -267,5 +260,37 @@ export const getMyBookings = asyncHandler(async (req, res, next) => {
     items: myBookings.length,
     success: true,
     data: myBookings,
+  });
+});
+export const getNewAccessToken = asyncHandler(async (req, res, next) => {
+  const accessToken = req.headers.authorization.split(" ")[1];
+  if (!accessToken) next(new ApiError("Access Token Not Found", 400));
+  const { refreshToken } = req.body;
+  if (!refreshToken) next(new ApiError("Refresh Token Not Found!!!", 400));
+  let decodedRefreshToken;
+  jwt.verify(
+    refreshToken,
+    process.env.JWT_REFRESH_SECRET,
+    (err, decodedToken) => {
+      if (err)
+        return next(
+          new ApiError("Refresh Token Expired Please Login Again", 512)
+        );
+      else decodedRefreshToken = decodedToken;
+    }
+  );
+  if (!decodedRefreshToken) {
+    return next(new ApiError("Invalid Refresh Token", 400));
+  }
+
+  const user = await User.findOne({ _id: decodedRefreshToken._id });
+  if (!user) return next(new ApiError("User Not Found!!", 400));
+  const newAccessToken = user.generateAccessToken(user._id);
+  if (!newAccessToken)
+    return next(new ApiError("Error While Generating Tokens", 400));
+  res.status(200).json({
+    success: true,
+    message: "New Access Token Created SuccessFully!!",
+    accessToken: newAccessToken,
   });
 });

@@ -10,7 +10,13 @@ export const verifyToken = asyncHandler(async (req, res, next) => {
   if (!reqToken) {
     return next(new ApiError(401, "Pls login to Access This Route!!!"));
   }
-  const decodedToken = jwt.verify(reqToken, process.env.JWT_SECRET);
+  let decodedToken;
+  jwt.verify(reqToken, process.env.JWT_SECRET, (err, token) => {
+    if (err && err.name == "TokenExpiredError")
+      return next(new ApiError(401, "Access Token Expired"));
+
+    decodedToken = token;
+  });
   if (!decodedToken) {
     return next(new ApiError(401, "Token not Found"));
   }

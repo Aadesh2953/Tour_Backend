@@ -45,6 +45,7 @@ export const userModel = new mongoose.Schema({
   passwordChangeDate: Date,
   passwordResetToken: String,
   passwordResetTokenExpires: Date,
+  refreshToken: String,
 });
 userModel.pre("save", async function (next) {
   if (!this.isModified("password")) {
