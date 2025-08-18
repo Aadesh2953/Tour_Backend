@@ -32,7 +32,13 @@ app.use(express.json({ limit: "16kb" }));
 // app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize());
 app.use(xss());
-app.use(cors({ origin: "*" })); // Allows requests from any origin
+app.use(
+  cors({
+    origin: ["https://tour-frontend-dkfo.vercel.app/"], // allow your Vercel frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+); // Allows requests from any origin
 const limiter = rateLimit({
   max: 1000,
   windowMs: 60 * 60 * 1000,
