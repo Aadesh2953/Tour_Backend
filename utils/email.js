@@ -35,10 +35,17 @@ export class Email {
       if (template == "AdminMail") html = AdminMail(data);
       else html = customerMail(data);
     } else {
-      html = pug.renderFile(
-        path.join(__dirname, "../views/templates/", `${template}.pug`),
-        { name: this.name, sendTo: this.sendTo, subject, url: this.url }
+      const templatePath = path.join(
+        __dirname,
+        "../views/templates",
+        `${template}.pug`
       );
+      html = pug.renderFile(templatePath, {
+        name: this.name,
+        sendTo: this.sendTo,
+        subject,
+        url: this.url,
+      });
     }
     const mailOptions = {
       from: "shuklaanmish@gmail.com",
