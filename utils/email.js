@@ -37,7 +37,8 @@ export class Email {
     } else {
       const templatePath = path.join(
         process.cwd(),
-        "/views/templates",
+        "views",
+        "templates",
         "welcome.pug"
       );
       html = pug.renderFile(templatePath, {
