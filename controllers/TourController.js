@@ -49,7 +49,7 @@ export const getTourStats = asyncHandler(async (req, res, next) => {
 export const mostSellingTourData = asyncHandler(async (req, res) => {
   let year = req.query?.year;
   if (!year) {
-    year = 2022;
+    year = 2025;
     // console.log('year',year);
   }
   const topSellingTour = await Tour.aggregate([
@@ -84,10 +84,11 @@ export const mostSellingTourData = asyncHandler(async (req, res) => {
       $limit: 1,
     },
   ]);
+  let tour = topSellingTour[0]?.tours.splice(0, 3);
   res.status(200).send({
     status: "Success",
     total: topSellingTour.length,
-    data: topSellingTour[0],
+    data: { tours: tour },
   });
 });
 export const getToursWithIn = asyncHandler(async (req, res, next) => {
@@ -146,7 +147,7 @@ export const getNearestTours = asyncHandler(async (req, res, next) => {
         ratingsAverage: 1,
         startLocation: 1,
         reviews: { $size: "$reviews" },
-        imageCover:1
+        imageCover: 1,
       },
     },
     {
@@ -158,7 +159,7 @@ export const getNearestTours = asyncHandler(async (req, res, next) => {
   ]);
   let totalCount = await Tour.countDocuments();
   // console.log(totalCount);
-  let hasNext=false;
+  let hasNext = false;
   if (skip < totalCount) {
     hasNext = true;
   }
@@ -167,7 +168,7 @@ export const getNearestTours = asyncHandler(async (req, res, next) => {
     message: "Success",
     items: totalCount,
     data: nearestTours,
-    hasNext:hasNext,
+    hasNext: hasNext,
   });
 });
 // export const getMostBookedTours=asyncHandler(async(req,res,next)=>{

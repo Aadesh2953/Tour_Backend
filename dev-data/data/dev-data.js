@@ -23,16 +23,18 @@ async function importDevData() {
     const tourData = JSON.parse(
       fs.readFileSync(path.join(__dirname, "tours.json"), "utf-8")
     );
-    const reviewData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "reviews.json"), "utf-8")
-    );
-    const userData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "users.json"), "utf-8")
-    );
-    await Tour.create(tourData);
-    await Reviews.create(reviewData);
-    await User.create(userData);
-    // console.log("Data imported successfully!");
+
+    // const reviewData = JSON.parse(
+    //   fs.readFileSync(path.join(__dirname, "reviews.json"), "utf-8")
+    // );
+    // const userData = JSON.parse(
+    //   fs.readFileSync(path.join(__dirname, "users.json"), "utf-8")
+    // );
+    // await Tour.create(tourData);
+    // console.log("DatA iMPORTED SUCCESSFULLY!!");
+    // await Reviews.create(reviewData);
+    // await User.create(userData);
+    
   } catch (err) {
     console.error("Error importing data:", err);
   }
@@ -41,9 +43,9 @@ async function importDevData() {
 async function deleteDevData() {
   try {
     await Tour.deleteMany();
-    await Reviews.deleteMany();
-    await User.deleteMany();
-    // console.log("Data deleted successfully!");
+    // await Reviews.deleteMany();
+    // await User.deleteMany();
+    console.log("Data deleted successfully!");
   } catch (err) {
     console.error("Error deleting data:", err);
   }
@@ -58,11 +60,11 @@ if (process.argv[2] === "--delete") {
 }
 if (process.argv[2] === "--update") {
   try {
-    await User.findByIdAndUpdate("67ebd318d59d670cb02187d2",{role:"admin"})
-    // await Tour.updateMany({
-    //   createdBy:"67ebd318d59d670cb02187d2"
-    // });
-    console.log('Updated Successfully!!')
+    // await User.findByIdAndUpdate("67ebd318d59d670cb02187d2", { role: "admin" });
+    await Tour.updateMany({
+      createdBy: "67ebd318d59d670cb02187d2",
+    });
+    console.log("Updated Successfully!!");
   } catch (err) {
     console.log("error", err);
   }
