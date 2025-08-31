@@ -14,7 +14,7 @@ export const getBooking = asyncHandler(async (req, res, next) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
-    success_url: `http://localhost:5173/my-bookings`,
+    success_url: `https://tour-frontend-dkfo.vercel.app/my-bookings`,
     cancel_url: `${req.protocol}://${req.get("host")}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.id,

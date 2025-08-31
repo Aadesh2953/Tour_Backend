@@ -83,7 +83,7 @@ export const signUpUser = asyncHandler(async (req, res, next) => {
     photo: imageUrl,
   });
   Promise.all([
-    new Email(newUser, `${req.protocol}://${req.get("host")}/me`).sendWelcome(),
+    new Email(newUser, `https://tour-frontend-dkfo.vercel.app/me`).sendWelcome(),
   ]);
   const { refreshToken, accessToken } = getJWTToken(newUser._id);
 
